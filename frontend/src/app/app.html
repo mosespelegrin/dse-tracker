@@ -1,0 +1,9 @@
+<router-outlet></router-outlet>
+
+<div class="toast-wrap">
+  @for (t of toastService.toasts(); track t.id) {
+    <div class="toast" [class.toast-ok]="t.type === 'ok'" [class.toast-err]="t.type === 'err'">
+      {{ t.text }}
+    </div>
+  }
+</div>

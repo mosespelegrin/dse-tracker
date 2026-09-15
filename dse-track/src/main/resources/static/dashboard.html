@@ -1,0 +1,1671 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DSE Tracker — Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ── TOKENS ── */
+    :root {
+      --bg:        #f0f2f5;
+      --surface:   #ffffff;
+      --surface-2: #f7f8fa;
+      --border:    #e2e5ea;
+      --border-2:  #eceef2;
+      --text-1:    #0f1117;
+      --text-2:    #5a6072;
+      --text-3:    #9aa0b0;
+      --accent:    #1a56db;
+      --accent-bg: #eff4ff;
+      --green:     #0d9e6a;
+      --green-bg:  #ecfdf5;
+      --green-border: #a7f3d0;
+      --red:       #dc2626;
+      --red-bg:    #fef2f2;
+      --red-border:#fecaca;
+      --amber:     #b45309;
+      --amber-bg:  #fffbeb;
+      --shadow-sm: 0 1px 2px rgba(15,17,23,0.06);
+      --shadow-md: 0 4px 12px rgba(15,17,23,0.08);
+      --shadow-lg: 0 16px 40px rgba(15,17,23,0.12);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --font: 'DM Sans', system-ui, sans-serif;
+      --mono: 'DM Mono', ui-monospace, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg:        #0d0f14;
+      --surface:   #161920;
+      --surface-2: #1c1f28;
+      --border:    #272b36;
+      --border-2:  #1e2130;
+      --text-1:    #eef0f5;
+      --text-2:    #8892a4;
+      --text-3:    #4e5668;
+      --accent:    #4b8eff;
+      --accent-bg: #0f1e3a;
+      --green:     #22c77a;
+      --green-bg:  #0a1f15;
+      --green-border:#1a4a30;
+      --red:       #f87171;
+      --red-bg:    #1f0a0a;
+      --red-border:#4a1a1a;
+      --amber:     #fbbf24;
+      --amber-bg:  #1f1500;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+      --shadow-lg: 0 20px 48px rgba(0,0,0,0.5);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── SKIP LINK (accessibility) ── */
+    .skip-link {
+      position: absolute; left: -9999px;
+      background: var(--accent); color: #fff;
+      padding: 8px 16px; border-radius: 4px; z-index: 9999;
+    }
+    .skip-link:focus { left: 16px; top: 16px; }
+
+    /* ── LAYOUT ── */
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 20px 0;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+
+    .brand-icon svg { color: #fff; }
+
+    .brand-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-1);
+      letter-spacing: -0.02em;
+    }
+
+    .sidebar-user {
+      margin: 16px 12px 8px;
+      padding: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border-2);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .user-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
+      display: grid; place-items: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .user-info { min-width: 0; }
+    .user-name {
+      font-size: 13px; font-weight: 600;
+      color: var(--text-1);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .user-role { font-size: 11px; color: var(--text-3); font-weight: 500; }
+
+    .sidebar-nav { padding: 8px 12px; flex: 1; }
+
+    .nav-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      padding: 12px 8px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      text-decoration: none;
+      transition: background 120ms ease, color 120ms ease;
+      touch-action: manipulation;
+    }
+
+    .nav-item:hover { background: var(--surface-2); color: var(--text-1); }
+
+    .nav-item.active {
+      background: var(--accent-bg);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+    .nav-item.active svg { opacity: 1; }
+
+    .sidebar-footer {
+      padding: 12px;
+      border-top: 1px solid var(--border-2);
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: background 120ms, color 120ms;
+    }
+    .logout-btn:hover { background: var(--red-bg); color: var(--red); }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      height: 56px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title { font-size: 15px; font-weight: 600; color: var(--text-1); }
+
+    .topbar-right { display: flex; align-items: center; gap: 8px; }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-2);
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: all 120ms;
+      touch-action: manipulation;
+    }
+    .icon-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+    .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* ── CONTENT ── */
+    .content { padding: 24px; flex: 1; }
+
+    /* ── PAGES ── */
+    .page { display: none; animation: fadeUp 200ms ease both; }
+    .page.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-hd {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .page-hd-left h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-1);
+    }
+
+    .page-hd-left p {
+      font-size: 13px;
+      color: var(--text-2);
+      margin-top: 3px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: none;
+      transition: all 140ms ease;
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: #1648c0; }
+
+    .btn-ghost { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+    .btn-ghost:hover:not(:disabled) { color: var(--text-1); border-color: var(--text-3); }
+
+    .btn-danger { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+    .btn-danger:hover:not(:disabled) { background: var(--red); color: #fff; }
+
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    /* ── STAT CARDS ── */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      transition: box-shadow 160ms;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 10px;
+    }
+
+    .stat-value {
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 500;
+      color: var(--text-1);
+      letter-spacing: -0.02em;
+    }
+
+    .stat-sub {
+      font-size: 12px;
+      color: var(--text-3);
+      margin-top: 6px;
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-top: 8px;
+    }
+
+    .badge-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+    .badge-red   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+    .badge-gray  { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-2);
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-1);
+    }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      padding: 10px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      border-bottom: 1px solid var(--border-2);
+      background: var(--surface-2);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-2);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-1);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tbody tr {
+      transition: background 100ms;
+      cursor: default;
+    }
+    tbody tr:hover { background: var(--surface-2); }
+
+    /* ── TICKER CELL ── */
+    .ticker-cell { display: flex; align-items: center; gap: 10px; }
+
+    .ticker-avatar {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: var(--accent-bg);
+      border: 1px solid var(--border);
+      display: grid; place-items: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      font-family: var(--mono);
+    }
+
+    .ticker-meta strong { font-size: 13px; font-weight: 600; display: block; }
+    .ticker-meta span   { font-size: 11px; color: var(--text-3); display: block; }
+
+    /* ── MONO VALUES ── */
+    .mono { font-family: var(--mono); font-size: 13px; }
+
+    .text-green { color: var(--green); }
+    .text-red   { color: var(--red); }
+    .text-muted { color: var(--text-2); }
+
+    /* ── CHIP ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 9px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: var(--mono);
+    }
+    .chip-green { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+    .chip-red   { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-border); }
+    .chip-buy   { background: var(--accent-bg); color: var(--accent); border: 1px solid var(--border); }
+    .chip-sell  { background: var(--amber-bg);  color: var(--amber);  border: 1px solid var(--border); }
+    .chip-gray  { background: var(--surface-2); color: var(--text-3); border: 1px solid var(--border); }
+
+    /* ── EMPTY STATE ── */
+    .empty {
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .empty-icon {
+      width: 48px; height: 48px;
+      border-radius: var(--radius-md);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: grid; place-items: center;
+      margin: 0 auto 16px;
+      color: var(--text-3);
+    }
+
+    .empty h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .empty p  { font-size: 13px; color: var(--text-2); max-width: 260px; margin: 0 auto 20px; }
+
+    /* ── SKELETON ── */
+    .skel {
+      background: linear-gradient(90deg, var(--surface-2) 25%, var(--border-2) 50%, var(--surface-2) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 4px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* ── CALC SECTION ── */
+    .calc-section { margin-top: 24px; }
+
+    .calc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-2);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .calc-row:last-child { border-bottom: none; }
+
+    .calc-stock { flex: 1; min-width: 0; }
+    .calc-stock strong { font-size: 13px; font-weight: 600; display: block; }
+    .calc-stock span   { font-size: 12px; color: var(--text-2); }
+
+    .calc-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .calc-input-wrap label { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+
+    .calc-input {
+      width: 160px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 0 10px;
+      outline: none;
+      transition: border 140ms;
+    }
+    .calc-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
+    .calc-input::placeholder { color: var(--text-3); font-family: var(--font); }
+
+    /* ── MODAL ── */
+    .overlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: rgba(15,17,23,0.5);
+      display: grid; place-items: center;
+      padding: 20px;
+      opacity: 0; visibility: hidden;
+      transition: opacity 160ms, visibility 160ms;
+      backdrop-filter: blur(4px);
+    }
+    .overlay.open { opacity: 1; visibility: visible; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: min(480px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.96) translateY(12px);
+      transition: transform 160ms ease;
+    }
+    .overlay.open .modal { transform: scale(1) translateY(0); }
+
+    .modal-hd {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--border-2);
+    }
+
+    .modal-hd h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .modal-hd p  { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+
+    .modal-close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text-2);
+      display: grid; place-items: center;
+      cursor: pointer;
+      font-size: 18px; line-height: 1;
+      flex-shrink: 0;
+      transition: all 120ms;
+    }
+    .modal-close:hover { border-color: var(--red); color: var(--red); background: var(--red-bg); }
+
+    .modal-body { padding: 20px 24px 24px; display: grid; gap: 16px; }
+
+    /* ── FORM ── */
+    .field { display: grid; gap: 6px; }
+
+    .field label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.02em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface-2);
+      color: var(--text-1);
+      font-family: var(--font);
+      font-size: 13px;
+      padding: 0 12px;
+      outline: none;
+      transition: border 140ms, box-shadow 140ms;
+      appearance: none;
+    }
+
+    .field input:focus,
+    .field select:focus {
+      border-color: var(--accent);
+      background: var(--surface);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+    }
+
+    .field input::placeholder { color: var(--text-3); }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* ── TYPE TOGGLE ── */
+    .type-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--surface-2);
+    }
+
+    .type-btn {
+      padding: 10px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-2);
+      transition: all 120ms;
+      touch-action: manipulation;
+    }
+
+    .type-btn.buy-active  { background: var(--accent-bg); color: var(--accent); }
+    .type-btn.sell-active { background: var(--amber-bg);  color: var(--amber); }
+
+    /* ── SUBMIT BTN ── */
+    .modal-submit {
+      width: 100%;
+      height: 44px;
+      border: none;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 140ms;
+    }
+    .modal-submit:hover:not(:disabled) { background: #1648c0; }
+    .modal-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--border-2);
+      margin: 4px 0;
+    }
+
+    /* ── TOAST ── */
+    .toast-wrap {
+      position: fixed;
+      bottom: 20px; right: 20px;
+      display: grid; gap: 8px;
+      z-index: 999;
+      pointer-events: none;
+    }
+
+    .toast {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideUp 200ms ease both;
+      max-width: 300px;
+    }
+
+    .toast-ok  { border-left: 3px solid var(--green); }
+    .toast-err { border-left: 3px solid var(--red); }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .form-row { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .calc-row { flex-direction: column; align-items: flex-start; }
+      .calc-input { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="app">
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar" role="navigation" aria-label="Main navigation">
+
+    <a class="sidebar-brand" href="index.html" aria-label="DSE Tracker home">
+      <div class="brand-icon" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </div>
+      <span class="brand-name">DSE Tracker</span>
+    </a>
+
+    <div class="sidebar-user">
+      <div class="user-avatar" id="sidebarInitial" aria-hidden="true">M</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Moses</div>
+        <div class="user-role">DSE Investor</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Portfolio</div>
+
+      <button class="nav-item active" data-page="holdings" aria-current="page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+        Holdings
+      </button>
+
+      <button class="nav-item" data-page="calculator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        P&amp;L Calculator
+      </button>
+
+      <div class="nav-section-label">Activity</div>
+
+      <button class="nav-item" data-page="transactions">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+        Transactions
+      </button>
+
+      <button class="nav-item" data-page="alerts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Alerts
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn" id="logoutBtn" aria-label="Log out of DSE Tracker">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Log out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <span class="topbar-title" id="topbarTitle">Holdings</span>
+      <div class="topbar-right">
+        <button class="icon-btn" id="themeBtn" aria-label="Toggle colour theme">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+        <button class="btn btn-primary btn-sm" id="topbarAddTx" aria-label="Add new transaction">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Transaction
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content" id="main-content">
+
+      <!-- ════ HOLDINGS PAGE ════ -->
+      <section class="page active" id="page-holdings" aria-labelledby="holdings-heading">
+
+        <div class="page-hd">
+          <div class="page-hd-left">
+            <h1 id="holdings-heading">My Holdings</h1>
+            <p>Current DSE positions and invested capital</p>
+          </div>
+          <button class="btn btn-primary" id="addTxBtn" aria-label="Log a new buy or sell transaction">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Transaction
+          </button>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="stat-grid" role="region" aria-label="Portfolio summary">
+          <div class="stat-card">
+            <div class="stat-label">Total Invested</div>
+            <div class="stat-value mono" id="statInvested">—</div>
+            <div class="stat-sub">TZS across all positions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Open Positions</div>
+            <div class="stat-value" id="statPositions">—</div>
+            <div class="stat-sub">DSE listed stocks held</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Shares</div>
+            <div class="stat-value mono" id="statShares">—</div>
+            <div class="stat-sub">units held across portfolio</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Cost / Share</div>
+            <div class="stat-value mono" id="statAvgCost">—</div>
+            <div class="stat-sub">weighted average entry</div>
+          </div>
+        </div>
+
+        <!-- HOLDINGS TABLE -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Positions</span>
+            <button class="btn btn-ghost btn-sm" id="goCalcBtn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Calculate P&amp;L
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table aria-label="Your DSE holdings">
+                <thead>
+                <tr>
+                    <th scope="col">Stock</th>
+                    <th scope="col">Shares</th>
+                    <th scope="col">Total Invested</th>
+                    <th scope="col">Avg Cost/Share</th>
+                    <th scope="col">Current Price</th>  <!-- ← add this -->
+                    <th scope="col">Sector</th>
+                </tr>
+                </thead>
+              <tbody id="holdingsBody">
+                <tr><td colspan="5"><div class="skel" style="height:14px;width:60%;margin:4px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ P&L CALCULATOR PAGE ════ -->
+      <section class="page" id="page-calculator" aria-labelledby="calc-heading">
+
+        <div class="page-hd">
+          <div class="page-hd-left">
+            <h1 id="calc-heading">P&amp;L Calculator</h1>
+            <p>Enter today's market prices to see your capital gains or losses</p>
+          </div>
+        </div>
+
+        <!-- RESULT STAT CARDS — hidden until calc runs -->
+        <div class="stat-grid" id="calcStats" style="display:none" role="region" aria-label="P&L results" aria-live="polite">
+          <div class="stat-card">
+            <div class="stat-label">Total Invested</div>
+            <div class="stat-value mono" id="rInvested">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Current Value</div>
+            <div class="stat-value mono" id="rValue">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Gain / Loss</div>
+            <div class="stat-value mono" id="rGainLoss">—</div>
+            <div id="rGainBadge"></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Overall ROI</div>
+            <div class="stat-value" id="rRoi">—</div>
+          </div>
+        </div>
+
+        <!-- PRICE INPUT CARD -->
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Enter today's prices</span>
+            <span style="font-size:12px;color:var(--text-3)">Leave blank to exclude a stock</span>
+          </div>
+          <div id="calcRows">
+            <div class="empty" style="padding:32px">
+              <p>Loading your holdings…</p>
+            </div>
+          </div>
+          <div style="padding:16px 20px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid var(--border-2)">
+            <button class="btn btn-ghost btn-sm" id="clearBtn">Clear</button>
+            <button class="btn btn-primary" id="calcBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Calculate
+            </button>
+          </div>
+        </div>
+
+        <!-- BREAKDOWN TABLE -->
+        <div class="card calc-section" id="calcBreakdown" style="display:none">
+          <div class="card-head">
+            <span class="card-title">Breakdown by stock</span>
+          </div>
+          <div class="table-wrap">
+            <table aria-label="P&L breakdown by stock">
+              <thead>
+                <tr>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Shares</th>
+                  <th scope="col">Invested</th>
+                  <th scope="col">Current Value</th>
+                  <th scope="col">Gain / Loss</th>
+                  <th scope="col">ROI</th>
+                </tr>
+              </thead>
+              <tbody id="calcBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ TRANSACTIONS PAGE ════ -->
+      <section class="page" id="page-transactions" aria-labelledby="tx-heading">
+
+        <div class="page-hd">
+          <div class="page-hd-left">
+            <h1 id="tx-heading">Transactions</h1>
+            <p>Full history of your DSE buys and sells</p>
+          </div>
+          <button class="btn btn-primary" id="addTxBtn2" aria-label="Log a new transaction">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Transaction
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="table-wrap">
+            <table aria-label="Transaction history">
+              <thead>
+                <tr>
+                  <th scope="col">Date</th>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Shares</th>
+                  <th scope="col">Total Paid (TZS)</th>
+                  <th scope="col">Notes</th>
+                </tr>
+              </thead>
+              <tbody id="txBody">
+                <tr><td colspan="6"><div class="skel" style="height:14px;width:70%;margin:4px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ ALERTS PAGE ════ -->
+      <section class="page" id="page-alerts" aria-labelledby="alerts-heading">
+
+        <div class="page-hd">
+          <div class="page-hd-left">
+            <h1 id="alerts-heading">Price Alerts</h1>
+            <p>Set targets — alerts fire when you enter a matching price in the calculator</p>
+          </div>
+        </div>
+
+        <!-- NEW ALERT FORM -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-head">
+            <span class="card-title">New Alert</span>
+          </div>
+          <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 160px 180px auto;gap:12px;align-items:end">
+            <div class="field">
+              <label for="alertStock">Stock</label>
+              <select id="alertStock" aria-required="true"></select>
+            </div>
+            <div class="field">
+              <label for="alertCond">Condition</label>
+              <select id="alertCond">
+                <option value="ABOVE">Price above</option>
+                <option value="BELOW">Price below</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="alertPrice">Target Price (TZS)</label>
+              <input type="number" id="alertPrice" placeholder="e.g. 750" min="0" aria-required="true">
+            </div>
+            <button class="btn btn-primary" id="saveAlertBtn" style="height:40px;align-self:end">Set Alert</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <span class="card-title">Active Alerts</span>
+          </div>
+          <div class="table-wrap">
+            <table aria-label="Your price alerts">
+              <thead>
+                <tr>
+                  <th scope="col">Stock</th>
+                  <th scope="col">Condition</th>
+                  <th scope="col">Target Price</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="alertsBody">
+                <tr><td colspan="4"><div class="skel" style="height:14px;width:50%;margin:4px 0"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ══ ADD TRANSACTION MODAL ══ -->
+<div class="overlay" id="txOverlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-hd">
+      <div>
+        <h2 id="modal-title">Log Transaction</h2>
+        <p>Record a buy or sell on the Dar es Salaam Stock Exchange</p>
+      </div>
+      <button class="modal-close" id="closeTxModal" aria-label="Close transaction modal">&times;</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="field">
+        <label>Transaction type</label>
+        <div class="type-toggle" role="group" aria-label="Choose buy or sell">
+          <button class="type-btn buy-active" id="btnBuy" aria-pressed="true">Buy</button>
+          <button class="type-btn" id="btnSell" aria-pressed="false">Sell</button>
+
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="txStock">Stock</label>
+        <select id="txStock" aria-required="true"></select>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="txShares">Number of shares</label>
+          <input type="number" id="txShares" placeholder="e.g. 2005" min="1" aria-required="true">
+        </div>
+        <div class="field">
+          <label for="txTotal">Total amount paid (TZS)</label>
+          <input type="number" id="txTotal" placeholder="e.g. 1363400" min="1" aria-required="true">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="txDate">Transaction date</label>
+        <input type="date" id="txDate" aria-required="true">
+      </div>
+
+      <div class="field">
+        <label for="txNotes">Notes <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+        <input type="text" id="txNotes" placeholder="e.g. Bought at market open">
+      </div>
+
+      <div class="divider"></div>
+
+      <button class="modal-submit" id="submitTx">Log Transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast-wrap" id="toastWrap" aria-live="polite" aria-atomic="false"></div>
+
+<script>
+/* ═══════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════ */
+const API = 'http://localhost:8081';
+
+/* ═══════════════════════════════════════
+   AUTH GUARD
+═══════════════════════════════════════ */
+const token = localStorage.getItem('dse_token');
+const user  = JSON.parse(localStorage.getItem('dse_user') || '{}');
+
+if (!token) { window.location.href = 'index.html'; }
+
+document.getElementById('sidebarName').textContent    = user.name || 'Investor';
+document.getElementById('sidebarInitial').textContent = (user.name || 'I')[0].toUpperCase();
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  localStorage.removeItem('dse_token');
+  localStorage.removeItem('dse_user');
+  window.location.href = 'index.html';
+});
+
+/* ═══════════════════════════════════════
+   THEME
+═══════════════════════════════════════ */
+const saved = localStorage.getItem('dse-theme') || 'light';
+document.body.dataset.theme = saved;
+
+document.getElementById('themeBtn').addEventListener('click', () => {
+  const next = document.body.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.body.dataset.theme = next;
+  localStorage.setItem('dse-theme', next);
+});
+
+/* ═══════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════ */
+const PAGE_TITLES = {
+  holdings:     'Holdings',
+  calculator:   'P&L Calculator',
+  transactions: 'Transactions',
+  alerts:       'Alerts'
+};
+
+function navigate(page) {
+  document.querySelectorAll('.nav-item').forEach(b => {
+    b.classList.toggle('active', b.dataset.page === page);
+    b.setAttribute('aria-current', b.dataset.page === page ? 'page' : 'false');
+  });
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('topbarTitle').textContent = PAGE_TITLES[page];
+
+  if (page === 'transactions') loadTransactions();
+  if (page === 'alerts')       loadAlerts();
+  if (page === 'calculator')   buildCalcRows();
+}
+
+document.querySelectorAll('.nav-item').forEach(b =>
+  b.addEventListener('click', () => navigate(b.dataset.page))
+);
+
+document.getElementById('goCalcBtn').addEventListener('click', () => navigate('calculator'));
+
+/* ═══════════════════════════════════════
+   API HELPER
+═══════════════════════════════════════ */
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+      ...(opts.headers || {})
+    }
+  });
+  if (res.status === 401) {
+    localStorage.removeItem('dse_token');
+    window.location.href = 'index.html';
+  }
+  return res;
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+// Escapes text before it's ever interpolated into an innerHTML template —
+// use this anywhere user-controlled text (notes, names, etc.) is rendered.
+// Backend-controlled fixed strings (SVG icons, tickers seeded by DataSeeder) don't need it.
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function toast(msg, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.setAttribute('role', 'status');
+
+  const icon = type === 'ok'
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+
+  const iconWrap = document.createElement('span');
+  iconWrap.innerHTML = icon; // fixed constant markup, not user data — safe
+
+  const textSpan = document.createElement('span');
+  textSpan.textContent = msg; // msg may originate from backend error text — never innerHTML this
+
+  el.appendChild(iconWrap);
+  el.appendChild(textSpan);
+  el.style.color = type === 'ok' ? 'var(--green)' : 'var(--red)';
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+/* ═══════════════════════════════════════
+   FORMAT HELPERS
+═══════════════════════════════════════ */
+const tzs = v => 'TZS\u00a0' + Number(v).toLocaleString('en-US', { maximumFractionDigits: 0 });
+const pct = v => (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
+const pos = v => Number(v) >= 0;
+
+/* ═══════════════════════════════════════
+   STOCKS LIST
+═══════════════════════════════════════ */
+let stocks = [];
+
+async function loadStocks() {
+  try {
+    const res = await fetch(API + '/stocks');
+    stocks = await res.json();
+    fillSelect('txStock');
+    fillSelect('alertStock');
+  } catch { toast('Could not load stock list', 'err'); }
+}
+
+function fillSelect(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = stocks.map(s =>
+    `<option value="${s.id}">${s.ticker} — ${s.companyName}</option>`
+  ).join('');
+}
+
+/* ═══════════════════════════════════════
+   HOLDINGS
+═══════════════════════════════════════ */
+let holdings = [];
+
+async function loadHoldings() {
+  try {
+    const res  = await api('/portfolio');
+    const data = await res.json();
+    holdings   = data.holdings || [];
+
+    const totalInvested = data.totalInvested || 0;
+    const totalShares   = holdings.reduce((s, h) => s + h.shares, 0);
+    const avgCost       = totalShares > 0 ? totalInvested / totalShares : 0;
+
+    document.getElementById('statInvested').textContent  = tzs(totalInvested);
+    document.getElementById('statPositions').textContent = holdings.length;
+    document.getElementById('statShares').textContent    = totalShares.toLocaleString();
+    document.getElementById('statAvgCost').textContent   = tzs(avgCost);
+
+    renderHoldings();
+  } catch { toast('Failed to load portfolio', 'err'); }
+}
+function renderHoldings() {
+    const tbody = document.getElementById('holdingsBody');
+
+    if (!holdings.length) {
+        // ... empty state stays the same
+        return;
+    }
+
+    tbody.innerHTML = holdings.map(h => {
+        const avg = (h.totalPaid / h.shares).toFixed(0);
+        const stock = stocks.find(s => s.id == (h.stockId || h.id));
+        const livePrice = stock && stock.currentPrice
+            ? tzs(stock.currentPrice)
+            : '<span class="text-muted">—</span>';
+
+        return `
+            <tr>
+                <td>
+                    <div class="ticker-cell">
+                        <div class="ticker-avatar" aria-hidden="true">${h.ticker.slice(0,4)}</div>
+                        <div class="ticker-meta">
+                            <strong>${h.ticker}</strong>
+                            <span>${h.companyName}</span>
+                        </div>
+                    </div>
+                </td>
+                <td class="mono">${h.shares.toLocaleString()}</td>
+                <td class="mono">${tzs(h.totalPaid)}</td>
+                <td class="mono">${tzs(avg)}</td>
+                <td class="mono">${livePrice}</td>
+                <td><span class="chip chip-gray">${h.sector || '—'}</span></td>
+            </tr>`;
+    }).join('');
+}
+
+/* ═══════════════════════════════════════
+   CALCULATOR
+═══════════════════════════════════════ */
+function buildCalcRows() {
+    const wrap = document.getElementById('calcRows');
+
+    if (!holdings.length) {
+        wrap.innerHTML = `<div class="empty"><p>No holdings to calculate. Add transactions first.</p></div>`;
+        return;
+    }
+
+    wrap.innerHTML = holdings.map(h => {
+        // Find matching stock in Stocks to get currentPrice
+        const stock = stocks.find(s => s.id == (h.stockId || h.id));
+        const livePrice = stock && stock.currentPrice ? stock.currentPrice : '';
+        const priceAge = stock && stock.lastUpdated
+            ? new Date(stock.lastUpdated).toLocaleString('en-US', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+              })
+            : null;
+
+        return `
+        <div class="calc-row">
+            <div class="calc-stock">
+                <strong>${h.ticker} — ${h.companyName}</strong>
+                <span>${h.shares.toLocaleString()} shares · invested ${tzs(h.totalPaid)}</span>
+                ${priceAge ? `<span style="color:var(--green);font-size:11px;display:block;margin-top:2px">● Live price as of ${priceAge}</span>` : '<span style="color:var(--text-3);font-size:11px;display:block;margin-top:2px">No live price yet</span>'}
+            </div>
+            <div class="calc-input-wrap">
+                <label for="price-${h.id}">Today's price (TZS)</label>
+                <input class="calc-input" type="number"
+                       id="price-${h.id}"
+                       data-stock-id="${h.stockId || h.id}"
+                       placeholder="Enter price"
+                       value="${livePrice}"
+                       min="0" step="1"
+                       aria-label="Current price for ${h.ticker}">
+            </div>
+        </div>`;
+    }).join('');
+}
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  document.querySelectorAll('.calc-input').forEach(i => i.value = '');
+  document.getElementById('calcStats').style.display = 'none';
+  document.getElementById('calcBreakdown').style.display = 'none';
+});
+
+document.getElementById('calcBtn').addEventListener('click', async () => {
+  const prices = {};
+  document.querySelectorAll('.calc-input').forEach(input => {
+    const v = parseFloat(input.value);
+    if (!isNaN(v) && v > 0) prices[input.dataset.stockId] = v;
+  });
+
+  if (!Object.keys(prices).length) {
+    toast('Enter at least one price to calculate', 'err');
+    return;
+  }
+
+  const btn = document.getElementById('calcBtn');
+  btn.disabled = true;
+  btn.textContent = 'Calculating…';
+
+  try {
+    const res  = await api('/portfolio/calculate', { method: 'POST', body: JSON.stringify(prices) });
+    const data = await res.json();
+
+    // Show stat cards
+    document.getElementById('calcStats').style.display = 'grid';
+    document.getElementById('rInvested').textContent = tzs(data.totalInvested);
+    document.getElementById('rValue').textContent    = tzs(data.totalCurrentValue);
+
+    const gl = data.totalGainLoss;
+    document.getElementById('rGainLoss').textContent  = tzs(gl);
+    document.getElementById('rGainLoss').className    = 'stat-value mono ' + (pos(gl) ? 'text-green' : 'text-red');
+    document.getElementById('rGainBadge').innerHTML   = `<span class="stat-badge ${pos(gl) ? 'badge-green' : 'badge-red'}">${pos(gl) ? '▲' : '▼'} ${pct(data.overallRoiPercent)}</span>`;
+    document.getElementById('rRoi').textContent       = pct(data.overallRoiPercent);
+    document.getElementById('rRoi').className         = 'stat-value ' + (pos(data.overallRoiPercent) ? 'text-green' : 'text-red');
+
+    // Breakdown table
+    document.getElementById('calcBreakdown').style.display = 'block';
+    document.getElementById('calcBody').innerHTML = data.holdings.map(h => {
+      const hasPL = h.currentValue != null;
+      return `
+        <tr>
+          <td>
+            <div class="ticker-cell">
+              <div class="ticker-avatar" aria-hidden="true">${h.ticker.slice(0,4)}</div>
+              <div class="ticker-meta">
+                <strong>${h.ticker}</strong>
+                <span>${h.companyName}</span>
+              </div>
+            </div>
+          </td>
+          <td class="mono">${h.shares.toLocaleString()}</td>
+          <td class="mono">${tzs(h.totalPaid)}</td>
+          <td class="mono">${hasPL ? tzs(h.currentValue) : '<span class="text-muted">—</span>'}</td>
+          <td class="mono ${hasPL ? (pos(h.gainLoss) ? 'text-green' : 'text-red') : ''}">
+            ${hasPL ? tzs(h.gainLoss) : '<span class="text-muted">—</span>'}
+          </td>
+          <td>
+            ${hasPL
+              ? `<span class="chip ${pos(h.roiPercent) ? 'chip-green' : 'chip-red'}">${pct(h.roiPercent)}</span>`
+              : '<span class="chip chip-gray">—</span>'}
+          </td>
+        </tr>`;
+    }).join('');
+
+  } catch { toast('Calculation failed', 'err'); }
+  finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Calculate';
+  }
+});
+
+/* ═══════════════════════════════════════
+   TRANSACTIONS
+═══════════════════════════════════════ */
+async function loadTransactions() {
+  try {
+    const res  = await api('/transactions');
+    const data = await res.json();
+    const tbody = document.getElementById('txBody');
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="6">
+        <div class="empty">
+          <div class="empty-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          </div>
+          <h3>No transactions yet</h3>
+          <p>Log a buy or sell to see your full history here.</p>
+        </div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(t => `
+      <tr>
+        <td class="mono" style="color:var(--text-2);font-size:12px">${escapeHtml(t.date)}</td>
+        <td>
+          <div class="ticker-cell">
+            <div class="ticker-avatar" aria-hidden="true">${escapeHtml(t.ticker.slice(0,4))}</div>
+            <div class="ticker-meta">
+              <strong>${escapeHtml(t.ticker)}</strong>
+              <span>${escapeHtml(t.companyName)}</span>
+            </div>
+          </div>
+        </td>
+        <td><span class="chip ${t.type === 'BUY' ? 'chip-buy' : 'chip-sell'}">${escapeHtml(t.type)}</span></td>
+        <td class="mono">${t.shares.toLocaleString()}</td>
+        <td class="mono">${tzs(t.totalPaid)}</td>
+        <td style="color:var(--text-2);font-size:12px">${t.notes ? escapeHtml(t.notes) : '—'}</td>
+      </tr>`).join('');
+  } catch { toast('Failed to load transactions', 'err'); }
+}
+
+/* ═══════════════════════════════════════
+   ALERTS
+═══════════════════════════════════════ */
+async function loadAlerts() {
+  try {
+    const res  = await api('/alerts');
+    const data = await res.json();
+    const tbody = document.getElementById('alertsBody');
+
+    if (!data.length) {
+      tbody.innerHTML = `<tr><td colspan="4">
+        <div class="empty">
+          <div class="empty-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <h3>No alerts set</h3>
+          <p>Use the form above to set your first price target.</p>
+        </div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map(a => `
+      <tr>
+        <td><strong>${a.stockTicker || '—'}</strong></td>
+        <td style="color:var(--text-2)">${a.conditionType}</td>
+        <td class="mono">${tzs(a.targetPrice)}</td>
+        <td><span class="chip ${a.triggered ? 'chip-green' : 'chip-gray'}">${a.triggered ? '✓ Triggered' : 'Watching'}</span></td>
+      </tr>`).join('');
+  } catch { toast('Failed to load alerts', 'err'); }
+}
+
+document.getElementById('saveAlertBtn').addEventListener('click', async () => {
+  const stockId   = document.getElementById('alertStock').value;
+  const condition = document.getElementById('alertCond').value;
+  const price     = document.getElementById('alertPrice').value;
+
+  if (!price) { toast('Enter a target price', 'err'); return; }
+
+  try {
+    const res = await api('/alerts', {
+      method: 'POST',
+      body: JSON.stringify({ stockId: Number(stockId), conditionType: condition, targetPrice: Number(price) })
+    });
+    if (res.ok) {
+      toast('Alert saved');
+      document.getElementById('alertPrice').value = '';
+      loadAlerts();
+    }
+  } catch { toast('Failed to save alert', 'err'); }
+});
+
+/* ═══════════════════════════════════════
+   TRANSACTION MODAL
+═══════════════════════════════════════ */
+let txType = 'BUY';
+
+function openTxModal() {
+  document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('txOverlay').classList.add('open');
+  document.getElementById('txStock').focus();
+}
+
+function closeTxModal() {
+  document.getElementById('txOverlay').classList.remove('open');
+}
+
+document.getElementById('addTxBtn').addEventListener('click', openTxModal);
+document.getElementById('addTxBtn2').addEventListener('click', openTxModal);
+document.getElementById('topbarAddTx').addEventListener('click', openTxModal);
+document.getElementById('closeTxModal').addEventListener('click', closeTxModal);
+
+document.getElementById('txOverlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('txOverlay')) closeTxModal();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeTxModal();
+});
+
+document.getElementById('btnBuy').addEventListener('click', () => {
+  txType = 'BUY';
+  document.getElementById('btnBuy').className  = 'type-btn buy-active';
+  document.getElementById('btnSell').className = 'type-btn';
+  document.getElementById('btnBuy').setAttribute('aria-pressed', 'true');
+  document.getElementById('btnSell').setAttribute('aria-pressed', 'false');
+  document.querySelector('label[for="txTotal"]').textContent = 'Total amount paid (TZS)';
+  document.getElementById('txTotal').placeholder = 'e.g. 340000';
+});
+
+// When sell type is selected, fetch current price for selected stock
+document.getElementById('btnSell').addEventListener('click', () => {
+    txType = 'SELL';
+    document.getElementById('btnSell').className = 'type-btn sell-active';
+    document.getElementById('btnBuy').className  = 'type-btn';
+    document.getElementById('btnSell').setAttribute('aria-pressed', 'true');
+    document.getElementById('btnBuy').setAttribute('aria-pressed', 'false');
+    document.querySelector('label[for="txTotal"]').textContent
+        = 'Sell price per share (TZS)';
+    document.getElementById('txTotal').placeholder = 'e.g. 690';
+
+    // Auto-fill current price from stocks list
+    prefillSellPrice();
+});
+
+// Also prefill when stock dropdown changes during sell
+document.getElementById('txStock').addEventListener('change', () => {
+    if (txType === 'SELL') prefillSellPrice();
+});
+
+function prefillSellPrice() {
+    const stockId = document.getElementById('txStock').value;
+    const stock   = stocks.find(s => s.id == stockId);
+    if (stock && stock.currentPrice) {
+        document.getElementById('txTotal').value
+            = stock.currentPrice;
+    }
+}
+
+document.getElementById('submitTx').addEventListener('click', async () => {
+    const stockId = document.getElementById('txStock').value;
+    const shares  = parseInt(document.getElementById('txShares').value);
+    const total   = parseFloat(document.getElementById('txTotal').value);
+    const date    = document.getElementById('txDate').value;
+    const notes   = document.getElementById('txNotes').value;
+
+    if (!stockId || !shares || !total || !date) {
+        toast('Fill in all required fields', 'err');
+        return;
+    }
+
+    const btn = document.getElementById('submitTx');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+        const endpoint = txType === 'BUY' ? '/transactions/buy' : '/transactions/sell';
+
+        // Build the correct body depending on BUY vs SELL
+        const payload = txType === 'BUY'
+            ? { stockId: Number(stockId), shares, totalPaid: total, date, notes }
+            : { stockId: Number(stockId), shares, sellPrice: total, date, notes };
+
+        const res = await api(endpoint, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            toast(txType === 'BUY' ? 'Buy logged ✓' : 'Sell logged ✓');
+            closeTxModal();
+            document.getElementById('txShares').value = '';
+            document.getElementById('txTotal').value  = '';
+            document.getElementById('txNotes').value  = '';
+            await loadHoldings();
+        } else {
+            const err = await res.json().catch(() => ({}));
+            toast(err.message || 'Transaction failed', 'err');
+        }
+    } catch { toast('Network error — is the server running?', 'err'); }
+    finally {
+        btn.disabled = false;
+        btn.textContent = 'Log Transaction';
+    }
+});
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+async function init() {
+    await loadStocks();
+    await loadHoldings();
+}
+init();
+</script>
+</body>
+</html>

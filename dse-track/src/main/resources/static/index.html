@@ -1,0 +1,1267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DSE Tracker - Landing</title>
+    <script src="./js/auth.js" defer></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0c0e;
+      --panel: #111317;
+      --line: #303237;
+      --text: #e8e9ec;
+      --muted: #787d87;
+      --green: #00f07a;
+      --pink: #ff3d76;
+      --amber: #ffad1f;
+      --blue: #20b8f6;
+      --header-bg: rgba(11, 12, 14, 0.9);
+      --shadow: 0 38px 90px rgba(0, 0, 0, 0.34);
+    }
+
+    body[data-theme="light"] {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --line: #d8dde5;
+      --text: #12151c;
+      --muted: #667085;
+      --green: #0f9f62;
+      --pink: #d93664;
+      --amber: #c98208;
+      --blue: #127db7;
+      --header-bg: rgba(247, 248, 250, 0.92);
+      --shadow: 0 28px 80px rgba(30, 37, 50, 0.14);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .site-header,
+    .site-footer {
+      height: 56px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(18px, 3.2vw, 40px);
+      background: var(--header-bg);
+      backdrop-filter: blur(16px);
+    }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mark {
+      width: 14px;
+      height: 14px;
+      position: relative;
+    }
+
+    .mark::before,
+    .mark::after,
+    .mark span {
+      content: "";
+      position: absolute;
+      left: 2px;
+      width: 10px;
+      height: 3px;
+      border-radius: 1px;
+      background: var(--text);
+    }
+
+    .mark::before { top: 2px; }
+    .mark span { top: 6px; width: 7px; }
+    .mark::after { top: 10px; width: 4px; }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .icon-button {
+      width: 32px;
+      height: 32px;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .icon-button:hover {
+      border-color: var(--line);
+      background: var(--panel);
+    }
+
+    .sign-up {
+      border: 1px solid var(--line);
+      padding: 8px 14px;
+      background: var(--panel);
+      color: var(--text);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 900px;
+      padding: 66px clamp(20px, 3.2vw, 40px) 0;
+      overflow: hidden;
+      border-bottom: 1px solid var(--line);
+      perspective: 1100px;
+      --scroll-shift: 0;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 260px;
+      height: 280px;
+      background:
+        linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+      background-size: 42px 42px;
+      transform: rotateX(64deg) translateY(calc(var(--scroll-shift) * 42px));
+      transform-origin: center bottom;
+      mask-image: linear-gradient(180deg, transparent, #000 24%, transparent);
+      pointer-events: none;
+    }
+
+    body[data-theme="light"] .hero::before {
+      background:
+        linear-gradient(rgba(15,23,42,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15,23,42,.07) 1px, transparent 1px);
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 3;
+      width: min(570px, 100%);
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      color: var(--text);
+      letter-spacing: -0.045em;
+      line-height: 0.98;
+    }
+
+    h1 {
+      font-size: clamp(42px, 5vw, 74px);
+      max-width: 720px;
+    }
+
+    .hero p,
+    .final p {
+      margin: 28px 0 0;
+      max-width: 430px;
+      color: var(--muted);
+      font-size: clamp(16px, 1.35vw, 20px);
+      font-weight: 650;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      min-height: 48px;
+      margin-top: 40px;
+      padding: 0 28px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--text);
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .button.primary {
+      margin-bottom: 72px;
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .hero-marquee {
+      position: absolute;
+      top: -70px;
+      right: 8vw;
+      z-index: 1;
+      width: min(790px, 62vw);
+      height: 540px;
+      overflow: hidden;
+      opacity: 0.82;
+      transform: translate3d(calc(var(--scroll-shift) * 42px), calc(var(--scroll-shift) * -18px), 0);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 84%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .hero-marquee::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 54% 24%, color-mix(in srgb, var(--blue) 18%, transparent), transparent 32%),
+        radial-gradient(circle at 72% 58%, color-mix(in srgb, var(--green) 12%, transparent), transparent 28%);
+      pointer-events: none;
+    }
+
+    .hero-marquee-stage {
+      width: 650px;
+      height: 650px;
+      margin-left: auto;
+      transform: rotateX(48deg) rotateZ(42deg) translate3d(60px, -96px, 0);
+      transform-style: preserve-3d;
+    }
+
+    .marquee-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 190px);
+      gap: 18px;
+      transform-style: preserve-3d;
+    }
+
+    .marquee-column {
+      display: grid;
+      gap: 18px;
+      animation: marqueeRise 13s ease-in-out infinite alternate;
+      transform-style: preserve-3d;
+    }
+
+    .marquee-column:nth-child(2) {
+      animation-name: marqueeDrop;
+      animation-duration: 16s;
+    }
+
+    .marquee-column:nth-child(3) { animation-duration: 11s; }
+
+    .analytics-tile {
+      position: relative;
+      width: 190px;
+      min-height: 138px;
+      border: 1px solid color-mix(in srgb, var(--text) 13%, transparent);
+      border-radius: 14px;
+      padding: 14px;
+      background:
+        linear-gradient(145deg, color-mix(in srgb, var(--text) 10%, transparent), color-mix(in srgb, var(--text) 3%, transparent)),
+        var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .analytics-tile::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px),
+        linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px);
+      background-size: 18px 18px;
+      opacity: .75;
+    }
+
+    .tile-kicker,
+    .tile-value,
+    .tile-mini,
+    .tile-bars,
+    .tile-donut,
+    .tile-blocks,
+    .tile-spark {
+      position: relative;
+      z-index: 1;
+    }
+
+    .tile-kicker {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .tile-value {
+      margin-top: 8px;
+      color: var(--text);
+      font-size: 28px;
+      font-weight: 950;
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+
+    .tile-mini {
+      margin-top: 8px;
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .tile-bars {
+      display: grid;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .tile-bars span {
+      height: 7px;
+      width: var(--w);
+      border-radius: 999px;
+      background: var(--c);
+      animation: tileBarPulse 2.8s ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .tile-donut {
+      width: 74px;
+      height: 74px;
+      margin: 14px auto 0;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0 38%, var(--amber) 38% 66%, var(--pink) 66% 82%, var(--blue) 82% 100%);
+      animation: donutSpin 10s linear infinite;
+    }
+
+    .tile-donut::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: inherit;
+      background: var(--panel);
+    }
+
+    .tile-blocks {
+      display: flex;
+      align-items: end;
+      gap: 6px;
+      height: 74px;
+      margin-top: 17px;
+    }
+
+    .tile-blocks span {
+      flex: 1;
+      height: var(--h);
+      border-radius: 4px 4px 2px 2px;
+      background: color-mix(in srgb, var(--c) 68%, transparent);
+      border: 1px solid color-mix(in srgb, var(--c) 72%, var(--line));
+      animation: tileBlockLift 2.6s ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .tile-spark {
+      width: 100%;
+      height: 46px;
+      margin-top: 18px;
+    }
+
+    .tile-spark polyline {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 170;
+      animation: sparkDraw 3.2s ease-in-out infinite;
+    }
+
+    .market-preview {
+      position: absolute;
+      left: clamp(20px, 3.2vw, 40px);
+      right: clamp(20px, 3.2vw, 40px);
+      bottom: 0;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      border-radius: 14px 14px 0 0;
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 96%, var(--bg)), var(--bg));
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      z-index: 4;
+    }
+
+    .market-scroll { overflow-x: auto; }
+    .market-table { min-width: 980px; }
+
+    .market-head,
+    .market-row {
+      display: grid;
+      grid-template-columns: 240px 110px 90px 90px 90px 92px 110px 100px 150px;
+      gap: 8px;
+      align-items: center;
+      padding: 13px 28px;
+    }
+
+    .market-head {
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .market-row {
+      min-height: 64px;
+      border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .market-row:last-child { border-bottom: 0; }
+    .market-row.is-selected { background: color-mix(in srgb, var(--text) 5%, transparent); }
+
+    .market-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .flag {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      background: linear-gradient(145deg, #1eb53a 0 37%, #fcd116 37% 42%, #111 42% 58%, #fcd116 58% 63%, #00a3dd 63% 100%);
+      border: 1px solid color-mix(in srgb, var(--text) 16%, transparent);
+    }
+
+    .market-title strong,
+    .market-title span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .market-title span {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .chip {
+      display: inline-flex;
+      justify-content: center;
+      min-width: 70px;
+      border: 1px solid currentColor;
+      border-radius: 8px;
+      padding: 5px 9px;
+      background: color-mix(in srgb, currentColor 12%, transparent);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .positive { color: var(--green); }
+    .negative { color: #f87171; }
+    .yield { color: var(--amber); }
+
+    .sparkline {
+      width: 64px;
+      height: 24px;
+    }
+
+    .sparkline polyline {
+      fill: none;
+      stroke: var(--text);
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: .82;
+    }
+
+    .daily {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    .section {
+      padding: 96px clamp(20px, 3.2vw, 40px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 24px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      font-size: clamp(34px, 4vw, 54px);
+      max-width: 560px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      margin-top: 64px;
+      border: 1px solid var(--line);
+    }
+
+    .feature {
+      min-height: 306px;
+      padding: 32px;
+      border-right: 1px solid var(--line);
+    }
+
+    .feature:last-child { border-right: 0; }
+
+    .visual {
+      height: 126px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 26px;
+      overflow: hidden;
+      background: color-mix(in srgb, var(--panel) 92%, var(--blue));
+    }
+
+    .bars {
+      width: 82%;
+      display: grid;
+      gap: 11px;
+    }
+
+    .bars span {
+      height: 7px;
+      width: var(--w);
+      border-radius: 999px;
+      background: var(--c);
+      animation: linePulse 2.8s ease-in-out infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    .dots {
+      width: 72%;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .dots span {
+      width: 31px;
+      height: 31px;
+      border-radius: 50%;
+      background: var(--c);
+      animation: dotBounce 1.8s ease-in-out infinite, dotColorSwap 5.4s linear infinite;
+      animation-delay: var(--delay, 0s), var(--delay, 0s);
+    }
+
+    .chart {
+      width: 80%;
+      height: 72px;
+      display: flex;
+      align-items: end;
+      gap: 7px;
+    }
+
+    .chart span {
+      flex: 1;
+      height: var(--h);
+      border: 1px solid var(--line);
+      border-radius: 2px 2px 0 0;
+      background: color-mix(in srgb, var(--blue) 12%, transparent);
+      animation: chartGrow 2.6s ease-in-out infinite, chartColorCycle 6s linear infinite;
+      animation-delay: var(--delay, 0s), var(--delay, 0s);
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .quote-band {
+      min-height: 420px;
+      padding: 92px clamp(20px, 3.2vw, 40px);
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid var(--line);
+      background:
+        repeating-linear-gradient(135deg, transparent 0 7px, color-mix(in srgb, var(--text) 8%, transparent) 8px 9px),
+        var(--bg);
+    }
+
+    .quote-card {
+      width: min(720px, 100%);
+      padding: clamp(28px, 4vw, 48px);
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+
+    blockquote {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(20px, 2vw, 28px);
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
+    .person {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 28px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #2d6f86, #ded0bf 45%, #4d3c35);
+      border: 1px solid var(--line);
+    }
+
+    .person strong { color: var(--text); }
+
+    .final {
+      min-height: 540px;
+      padding: 118px 20px 90px;
+      text-align: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .final h2 {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .final p {
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 520px;
+      font-size: 15px;
+    }
+
+    .site-footer {
+      border-bottom: 0;
+      color: var(--muted);
+    }
+
+    .auth-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.58);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 180ms ease, visibility 180ms ease;
+    }
+
+    body[data-theme="light"] .auth-backdrop {
+      background: rgba(15, 23, 42, 0.32);
+    }
+
+    .auth-backdrop.is-open {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .auth-modal {
+      width: min(440px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      transform: translateY(18px) scale(.98);
+      transition: transform 180ms ease;
+    }
+
+    .auth-backdrop.is-open .auth-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .auth-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .auth-title {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.08;
+      letter-spacing: -.03em;
+    }
+
+    .auth-subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .auth-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+      flex: 0 0 auto;
+    }
+
+    .auth-body {
+      display: grid;
+      gap: 14px;
+      padding: 22px 24px 24px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .field input {
+      width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 0 13px;
+      font: inherit;
+      letter-spacing: 0;
+      text-transform: none;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 18%, transparent);
+    }
+
+    .auth-submit {
+      width: 100%;
+      min-height: 46px;
+      border: 0;
+      border-radius: 8px;
+      background: var(--text);
+      color: var(--bg);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .auth-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      text-align: center;
+    }
+
+    body.auth-lock {
+      overflow: hidden;
+    }
+
+    @keyframes marqueeRise {
+      from { transform: translate3d(0, -24px, 34px); }
+      to { transform: translate3d(0, 74px, 34px); }
+    }
+
+    @keyframes marqueeDrop {
+      from { transform: translate3d(0, 76px, 0); }
+      to { transform: translate3d(0, -34px, 0); }
+    }
+
+    @keyframes tileBarPulse {
+      0%, 100% { width: var(--w); }
+      50% { width: var(--w2); }
+    }
+
+    @keyframes tileBlockLift {
+      0%, 100% { height: var(--h); filter: hue-rotate(0deg); }
+      50% { height: min(94%, calc(var(--h) + 20%)); filter: hue-rotate(48deg); }
+    }
+
+    @keyframes donutSpin { to { transform: rotate(360deg); } }
+
+    @keyframes sparkDraw {
+      0% { stroke-dashoffset: 170; }
+      45%, 100% { stroke-dashoffset: 0; }
+    }
+
+    @keyframes linePulse {
+      0%, 100% { width: var(--w); }
+      50% { width: var(--w2); }
+    }
+
+    @keyframes dotBounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-16px) scale(1.08); }
+    }
+
+    @keyframes dotColorSwap {
+      0%, 100% { background: var(--blue); }
+      33% { background: var(--amber); }
+      66% { background: var(--green); }
+    }
+
+    @keyframes chartGrow {
+      0%, 100% { height: var(--h); }
+      50% { height: min(92%, calc(var(--h) + 22%)); }
+    }
+
+    @keyframes chartColorCycle {
+      0%, 100% { border-color: var(--line); background-color: color-mix(in srgb, var(--blue) 10%, transparent); }
+      33% { border-color: var(--amber); background-color: color-mix(in srgb, var(--amber) 12%, transparent); }
+      66% { border-color: var(--green); background-color: color-mix(in srgb, var(--green) 12%, transparent); }
+    }
+
+    @media (max-width: 880px) {
+      .hero { min-height: 900px; }
+      .hero-marquee {
+        top: 160px;
+        right: -80px;
+        width: 570px;
+        height: 430px;
+        opacity: .42;
+      }
+      .hero-marquee-stage {
+        transform: rotateX(48deg) rotateZ(42deg) translate3d(40px, -80px, 0) scale(.82);
+      }
+      .feature-grid { grid-template-columns: 1fr; }
+      .feature,
+      .feature:last-child {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .feature:last-child { border-bottom: 0; }
+      .market-preview {
+        left: 0;
+        right: 0;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .nav { gap: 10px; font-size: 12px; }
+      .sign-up { padding: 7px 10px; }
+      h1 { font-size: clamp(39px, 12vw, 52px); }
+      .hero { min-height: 900px; padding-top: 56px; }
+      .hero-marquee {
+        top: 220px;
+        right: -150px;
+        width: 520px;
+        height: 380px;
+        opacity: .34;
+      }
+      .hero-marquee-stage {
+        transform: rotateX(48deg) rotateZ(42deg) translate3d(20px, -80px, 0) scale(.68);
+      }
+      .button { width: 100%; max-width: 260px; }
+      .market-table { min-width: 930px; }
+      .market-head,
+      .market-row { padding-left: 20px; padding-right: 20px; }
+      .section { padding-top: 72px; padding-bottom: 72px; }
+      .site-header,
+      .site-footer { padding-left: 16px; padding-right: 16px; }
+      .brand { font-size: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <header class="site-header">
+    <a class="brand" href="index.html">
+      <span class="mark" aria-hidden="true"><span></span></span>
+      DSE Tracker
+    </a>
+    <nav class="nav" aria-label="Primary">
+      <button class="icon-button" type="button" aria-label="Switch theme" data-theme-toggle>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M20 15.4A8 8 0 0 1 8.6 4 8.5 8.5 0 1 0 20 15.4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <a href="#login" data-auth-open="login">Log in</a>
+      <a class="sign-up" href="#signup" data-auth-open="signup">Sign up</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-marquee" aria-hidden="true">
+        <div class="hero-marquee-stage">
+          <div class="marquee-grid">
+            <div class="marquee-column">
+              <div class="analytics-tile">
+                <div class="tile-kicker">DSEI Momentum</div>
+                <div class="tile-value">+4.8%</div>
+                <div class="tile-mini">30 day trend</div>
+                <svg class="tile-spark" viewBox="0 0 160 46"><polyline points="4,36 24,32 42,34 61,24 80,28 99,16 118,20 139,9 156,12"></polyline></svg>
+              </div>
+              <div class="analytics-tile">
+                <div class="tile-kicker">Bank Weight</div>
+                <div class="tile-donut"></div>
+                <div class="tile-mini">38% of watchlist</div>
+              </div>
+              <div class="analytics-tile">
+                <div class="tile-kicker">Yield Screen</div>
+                <div class="tile-bars">
+                  <span style="--c: var(--green); --w: 82%; --w2: 62%; --delay: 0s"></span>
+                  <span style="--c: var(--amber); --w: 64%; --w2: 88%; --delay: .18s"></span>
+                  <span style="--c: var(--blue); --w: 48%; --w2: 70%; --delay: .36s"></span>
+                  <span style="--c: var(--pink); --w: 30%; --w2: 52%; --delay: .54s"></span>
+                </div>
+              </div>
+            </div>
+            <div class="marquee-column">
+              <div class="analytics-tile">
+                <div class="tile-kicker">Volume Heat</div>
+                <div class="tile-blocks">
+                  <span style="--c: var(--blue); --h: 28%; --delay: 0s"></span>
+                  <span style="--c: var(--green); --h: 52%; --delay: .12s"></span>
+                  <span style="--c: var(--amber); --h: 38%; --delay: .24s"></span>
+                  <span style="--c: var(--pink); --h: 72%; --delay: .36s"></span>
+                  <span style="--c: var(--blue); --h: 46%; --delay: .48s"></span>
+                </div>
+              </div>
+              <div class="analytics-tile">
+                <div class="tile-kicker">Top Holding</div>
+                <div class="tile-value">CRDB</div>
+                <div class="tile-mini">+2.13% today</div>
+                <svg class="tile-spark" viewBox="0 0 160 46"><polyline points="4,33 24,30 42,27 61,28 80,20 99,22 118,14 139,17 156,8"></polyline></svg>
+              </div>
+              <div class="analytics-tile">
+                <div class="tile-kicker">Risk Mix</div>
+                <div class="tile-bars">
+                  <span style="--c: var(--pink); --w: 74%; --w2: 58%; --delay: .08s"></span>
+                  <span style="--c: var(--amber); --w: 54%; --w2: 82%; --delay: .26s"></span>
+                  <span style="--c: var(--green); --w: 68%; --w2: 48%; --delay: .44s"></span>
+                </div>
+              </div>
+            </div>
+            <div class="marquee-column">
+              <div class="analytics-tile">
+                <div class="tile-kicker">P/L Watch</div>
+                <div class="tile-value">TZS</div>
+                <div class="tile-mini">cost basis live</div>
+                <svg class="tile-spark" viewBox="0 0 160 46"><polyline points="4,22 24,25 42,17 61,23 80,15 99,18 118,11 139,14 156,7"></polyline></svg>
+              </div>
+              <div class="analytics-tile">
+                <div class="tile-kicker">Sector Pulse</div>
+                <div class="tile-blocks">
+                  <span style="--c: var(--green); --h: 58%; --delay: 0s"></span>
+                  <span style="--c: var(--amber); --h: 34%; --delay: .15s"></span>
+                  <span style="--c: var(--blue); --h: 76%; --delay: .30s"></span>
+                  <span style="--c: var(--pink); --h: 48%; --delay: .45s"></span>
+                  <span style="--c: var(--green); --h: 66%; --delay: .60s"></span>
+                </div>
+              </div>
+              <div class="analytics-tile">
+                <div class="tile-kicker">Dividend Map</div>
+                <div class="tile-donut"></div>
+                <div class="tile-mini">banks, telecom, cement</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-copy">
+        <h1 id="hero-title">Your DSE portfolio, finally in one place</h1>
+        <p>Track holdings, P&amp;L, and sector exposure across the Dar es Salaam Stock Exchange. Built for retail investors who want clarity, not clutter.</p>
+        <a class="button primary" href="#signup" data-auth-open="signup">Get started free <span aria-hidden="true">&rarr;</span></a>
+      </div>
+
+      <div class="market-preview" aria-label="Dar es Salaam Stock Exchange market table preview">
+        <div class="market-scroll">
+          <div class="market-table">
+            <div class="market-head">
+              <div>Index</div><div>YTD Return</div><div>P/LTM EPS</div><div>Div Yield</div><div>Mkt Cap</div><div>Volume</div><div>2-Day Chart</div><div>Price</div><div>Daily Performance</div>
+            </div>
+            <div class="market-row is-selected">
+              <div class="market-name"><span class="flag"></span><span class="market-title"><strong>CRDB Bank</strong><span>Tanzania</span></span></div>
+              <div><span class="chip positive">+18.42%</span></div><div>7.86</div><div class="yield">+5.10%</div><div>1.42T</div><div>4.8M</div>
+              <div><svg class="sparkline" viewBox="0 0 64 24"><polyline points="2,18 9,15 16,16 23,12 30,13 37,9 44,10 51,6 62,5"></polyline></svg></div>
+              <div>TZS 720</div><div class="daily"><span class="positive">+15.00</span><span class="chip positive">+2.13%</span></div>
+            </div>
+            <div class="market-row">
+              <div class="market-name"><span class="flag"></span><span class="market-title"><strong>NMB Bank</strong><span>Tanzania</span></span></div>
+              <div><span class="chip positive">+11.75%</span></div><div>6.32</div><div class="yield">+6.84%</div><div>2.31T</div><div>1.2M</div>
+              <div><svg class="sparkline" viewBox="0 0 64 24"><polyline points="2,16 9,14 16,11 23,12 30,9 37,8 44,10 51,7 62,6"></polyline></svg></div>
+              <div>TZS 5,420</div><div class="daily"><span class="negative">-20.00</span><span class="chip negative">-0.37%</span></div>
+            </div>
+            <div class="market-row">
+              <div class="market-name"><span class="flag"></span><span class="market-title"><strong>Tanzania Breweries</strong><span>Tanzania</span></span></div>
+              <div><span class="chip negative">-3.64%</span></div><div>12.04</div><div class="yield">+3.20%</div><div>3.05T</div><div>586.4k</div>
+              <div><svg class="sparkline" viewBox="0 0 64 24"><polyline points="2,7 9,8 16,7 23,10 30,12 37,11 44,14 51,16 62,17"></polyline></svg></div>
+              <div>TZS 10,800</div><div class="daily"><span class="negative">-100.00</span><span class="chip negative">-0.92%</span></div>
+            </div>
+            <div class="market-row">
+              <div class="market-name"><span class="flag"></span><span class="market-title"><strong>Vodacom Tanzania</strong><span>Tanzania</span></span></div>
+              <div><span class="chip positive">+6.28%</span></div><div>19.48</div><div class="yield">+4.72%</div><div>1.98T</div><div>822.0k</div>
+              <div><svg class="sparkline" viewBox="0 0 64 24"><polyline points="2,15 9,13 16,15 23,12 30,10 37,11 44,8 51,9 62,6"></polyline></svg></div>
+              <div>TZS 885</div><div class="daily"><span class="positive">+5.00</span><span class="chip positive">+0.57%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <p class="eyebrow">Built for DSE investors</p>
+      <h2>Less spreadsheets. More signal.</h2>
+      <div class="feature-grid">
+        <article class="feature">
+          <div class="visual"><div class="bars">
+            <span style="--c: var(--pink); --w: 100%; --w2: 78%; --delay: 0s"></span>
+            <span style="--c: var(--amber); --w: 75%; --w2: 96%; --delay: .18s"></span>
+            <span style="--c: #9aaabd; --w: 50%; --w2: 68%; --delay: .36s"></span>
+            <span style="--c: var(--green); --w: 25%; --w2: 44%; --delay: .54s"></span>
+          </div></div>
+          <h3>Live holdings</h3>
+          <p>Every ticker, every lot, every average cost. See unrealized P&amp;L the moment prices move on the DSE.</p>
+        </article>
+        <article class="feature">
+          <div class="visual"><div class="dots">
+            <span style="--c: var(--blue); --delay: 0s"></span>
+            <span style="--c: var(--amber); --delay: .22s"></span>
+            <span style="--c: var(--green); --delay: .44s"></span>
+          </div></div>
+          <h3>Sector exposure</h3>
+          <p>Know how concentrated you are in banks, telecom, breweries, or cement before the market reminds you.</p>
+        </article>
+        <article class="feature">
+          <div class="visual"><div class="chart">
+            <span style="--h: 29%; --delay: 0s"></span>
+            <span style="--h: 48%; --delay: .12s"></span>
+            <span style="--h: 34%; --delay: .24s"></span>
+            <span style="--h: 58%; --delay: .36s"></span>
+            <span style="--h: 42%; --delay: .48s"></span>
+            <span style="--h: 52%; --delay: .60s"></span>
+            <span style="--h: 66%; --delay: .72s"></span>
+          </div></div>
+          <h3>Performance analytics</h3>
+          <p>Daily change, monthly returns, best and worst performers. Numbers that tell you something, not noise.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="quote-band">
+      <div class="quote-card">
+        <blockquote>"I used to maintain three Excel sheets to track my DSE positions. Now I open one tab and see everything: cost basis, today's move, sector mix. Game changer."</blockquote>
+        <div class="person"><span class="avatar"></span><strong>Tashid Ahmed</strong><span>Retail Investor, Dar es Salaam</span></div>
+      </div>
+    </section>
+
+    <section class="final">
+      <h2>Your portfolio isn't going to track itself.</h2>
+      <p>Two minutes to set up. No credit card. No brokerage login. Just clarity on your DSE positions, starting now.</p>
+      <a class="button" href="#signup" data-auth-open="signup">Start tracking now <span aria-hidden="true">&rarr;</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <a class="brand" href="index.html"><span class="mark" aria-hidden="true"><span></span></span>DSE Tracker</a>
+    <span>&copy; 2026</span>
+  </footer>
+
+  <div class="auth-backdrop" data-modal="login" aria-hidden="true">
+    <section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="login-title" aria-describedby="login-subtitle">
+      <div class="auth-head">
+        <div>
+          <h2 class="auth-title" id="login-title">Welcome back</h2>
+          <p class="auth-subtitle" id="login-subtitle">Log in to open your DSE dashboard.</p>
+        </div>
+        <button class="auth-close" type="button" aria-label="Close login form" data-auth-close>&times;</button>
+      </div>
+      <form class="auth-body">
+        <label class="field">
+          Email
+          <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+        </label>
+        <label class="field">
+          Password
+          <input type="password" name="password" autocomplete="current-password" placeholder="Password" required>
+        </label>
+        <button class="auth-submit" type="submit">Log in</button>
+        <p class="auth-note">Uses your existing backend auth endpoint.</p>
+      </form>
+    </section>
+  </div>
+
+  <div class="auth-backdrop" data-modal="signup" aria-hidden="true">
+    <section class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="signup-title" aria-describedby="signup-subtitle">
+      <div class="auth-head">
+        <div>
+          <h2 class="auth-title" id="signup-title">Create account</h2>
+          <p class="auth-subtitle" id="signup-subtitle">Start tracking holdings, returns, and sector exposure.</p>
+        </div>
+        <button class="auth-close" type="button" aria-label="Close signup form" data-auth-close>&times;</button>
+      </div>
+      <form class="auth-body">
+        <label class="field">
+          Full name
+          <input type="text" name="name" autocomplete="name" placeholder="Your name" required>
+        </label>
+        <label class="field">
+          Email
+          <input type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+        </label>
+        <label class="field">
+          Password
+          <input type="password" name="password" autocomplete="new-password" minlength="6" placeholder="At least 6 characters" required>
+        </label>
+        <button class="auth-submit" type="submit">Create account</button>
+        <p class="auth-note">No brokerage login or credit card needed.</p>
+      </form>
+    </section>
+  </div>
+
+  <script>
+      // Open modal
+document.querySelectorAll("[data-auth-open]").forEach(btn => {
+    btn.addEventListener("click", e => {
+        e.preventDefault();
+
+        const modalName = btn.dataset.authOpen;
+        const modal = document.querySelector(`[data-modal="${modalName}"]`);
+
+        if (!modal) return;
+
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("auth-lock");
+    });
+});
+
+// Close modal
+document.querySelectorAll("[data-auth-close]").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const modal = btn.closest(".auth-backdrop");
+
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("auth-lock");
+    });
+});
+
+// Close when clicking backdrop
+document.querySelectorAll(".auth-backdrop").forEach(modal => {
+    modal.addEventListener("click", e => {
+        if (e.target !== modal) return;
+
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("auth-lock");
+    });
+});
+
+// ESC closes modal
+document.addEventListener("keydown", e => {
+    if (e.key !== "Escape") return;
+
+    document.querySelectorAll(".auth-backdrop.is-open").forEach(modal => {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+    });
+
+    document.body.classList.remove("auth-lock");
+});
+    const themeToggle = document.querySelector("[data-theme-toggle]");
+    const storedTheme = localStorage.getItem("dse-landing-theme");
+    if (storedTheme === "light" || storedTheme === "dark") {
+      document.body.dataset.theme = storedTheme;
+    }
+
+    themeToggle?.addEventListener("click", () => {
+      const nextTheme = document.body.dataset.theme === "light" ? "dark" : "light";
+      document.body.dataset.theme = nextTheme;
+      localStorage.setItem("dse-landing-theme", nextTheme);
+    });
+
+    const hero = document.querySelector(".hero");
+    const updateHero = () => {
+      if (!hero) return;
+      const rect = hero.getBoundingClientRect();
+      const progress = Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height - innerHeight)));
+      hero.style.setProperty("--scroll-shift", progress.toFixed(3));
+    };
+
+    let ticking = false;
+    addEventListener("scroll", () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        updateHero();
+        ticking = false;
+      });
+    }, { passive: true });
+    updateHero();
+  </script>
+</body>
+</html>
