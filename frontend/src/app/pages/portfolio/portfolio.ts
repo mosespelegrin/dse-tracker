@@ -44,6 +44,7 @@ import { ToastService } from '../../core/toast.service';
                   <th>Company</th>
                   <th>Shares</th>
                   <th>Total Paid</th>
+                  <th>Current Price</th>
                   <th>Current Value</th>
                   <th>Gain/Loss</th>
                   <th>ROI</th>
@@ -56,11 +57,12 @@ import { ToastService } from '../../core/toast.service';
                     <td>{{ h.companyName }}</td>
                     <td class="mono">{{ h.shares }}</td>
                     <td class="mono">{{ tzs(h.totalPaid) }}</td>
-                    <td class="mono">{{ h.currentValue !== undefined ? tzs(h.currentValue) : '—' }}</td>
+                    <td class="mono">{{ h.currentPrice ? tzs(h.currentPrice) : '—' }}</td>
+                    <td class="mono">{{ h.currentValue !== undefined && h.currentValue !== null ? tzs(h.currentValue) : '—' }}</td>
                     <td class="mono" [class.badge-green]="gainPositive(h.gainLoss)" [class.badge-red]="!gainPositive(h.gainLoss) && h.gainLoss !== undefined">
-                      {{ h.gainLoss !== undefined ? tzs(h.gainLoss) : '—' }}
+                      {{ h.gainLoss !== undefined && h.gainLoss !== null ? tzs(h.gainLoss) : '—' }}
                     </td>
-                    <td class="mono">{{ h.roiPercent !== undefined ? h.roiPercent.toFixed(2) + '%' : '—' }}</td>
+                    <td class="mono">{{ h.roiPercent !== undefined && h.roiPercent !== null ? h.roiPercent.toFixed(2) + '%' : '—' }}</td>
                   </tr>
                 }
               </tbody>

@@ -11,9 +11,9 @@ import { AuthService } from '../../core/auth.service';
     <div class="shell">
       <aside class="sidebar">
         <div class="brand">
-          <div class="brand-mark">DT</div>
-          <div>
-            <div class="brand-name">DSE Track</div>
+          <img src="logo-mark.png" alt="DSE Tracker" class="brand-logo" />
+          <div class="brand-info">
+            <div class="brand-name">DSE Tracker</div>
             <div class="brand-sub">{{ auth.user()?.name || 'Investor' }}</div>
           </div>
         </div>
@@ -56,17 +56,13 @@ import { AuthService } from '../../core/auth.service';
         align-items: center;
         gap: 10px;
       }
-      .brand-mark {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, var(--accent) 0%, #6366f1 100%);
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 13px;
+      .brand-logo {
+        width: 38px;
+        height: 38px;
+        border-radius: 9px;
+        object-fit: cover;
+        box-shadow: 0 0 12px rgba(0, 190, 255, 0.4);
+        border: 1px solid rgba(0, 210, 255, 0.25);
       }
       .brand-name {
         font-weight: 700;

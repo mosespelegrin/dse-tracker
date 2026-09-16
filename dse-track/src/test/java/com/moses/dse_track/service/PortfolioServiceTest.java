@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -98,5 +99,96 @@ class PortfolioServiceTest {
         assertThat(breakdown.get(0).percentOfPortfolio()).isEqualByComparingTo("75.00");
         assertThat(breakdown.get(1).sector()).isEqualTo("Telecom");
         assertThat(breakdown.get(1).percentOfPortfolio()).isEqualByComparingTo("25.00");
+    }
+
+    @Test
+    void getPortfolioCalculatesPnLAutomaticallyFromScrapedPrices() {
+        Stock stock = Stock.builder().id(1L).ticker("CRDB").companyName("CRDB Bank").currentPrice(new BigDecimal("120")).build();
+        Holding holding = Holding.builder().id(10L).user(user).stock(stock)
+                .shares(10).totalPaid(new BigDecimal("1000")).build();
+
+        when(holdingRepository.findByUserId(1L)).thenReturn(List.of(holding));
+        when(transactionRepository.findByUserIdOrderByDateDesc(1L)).thenReturn(List.of());
+
+        var response = portfolioService.getPortfolio(1L);
+
+        assertThat(response.getTotalInvested()).isEqualByComparingTo("1000");
+        assertThat(response.getTotalCurrentValue()).isEqualByComparingTo("1200");
+        assertThat(response.getTotalGainLoss()).isEqualByComparingTo("200");
+        assertThat(response.getOverallRoiPercent()).isEqualByComparingTo("20.0000");
+
+        assertThat(response.getHoldings()).hasSize(1);
+        var h = response.getHoldings().get(0);
+        assertThat(h.getCurrentPrice()).isEqualByComparingTo("120");
+        assertThat(h.getCurrentValue()).isEqualByComparingTo("1200");
+        assertThat(h.getGainLoss()).isEqualByComparingTo("200");
+        assertThat(h.getRoiPercent()).isEqualByComparingTo("20.0000");
+    }
+
+    @Test
+    void calculatePortfolioAppliesPriceOverridesWhileDefaultingToScrapedPrices() {
+        Stock stock1 = Stock.builder().id(1L).ticker("CRDB").companyName("CRDB Bank").currentPrice(new BigDecimal("100")).build();
+        Stock stock2 = Stock.builder().id(2L).ticker("NMB").companyName("NMB Bank").currentPrice(new BigDecimal("200")).build();
+
+        Holding holding1 = Holding.builder().id(10L).user(user).stock(stock1)
+                .shares(10).totalPaid(new BigDecimal("1000")).build();
+        Holding holding2 = Holding.builder().id(20L).user(user).stock(stock2)
+                .shares(5).totalPaid(new BigDecimal("1000")).build();
+
+        when(holdingRepository.findByUserId(1L)).thenReturn(List.of(holding1, holding2));
+        when(transactionRepository.findByUserIdOrderByDateDesc(1L)).thenReturn(List.of());
+
+        // Override stock 1 to 150, leave stock 2 at scraped price (200)
+        var response = portfolioService.calculatePortfolio(1L, Map.of(1L, new BigDecimal("150")));
+
+        // Holding 1: 10 * 150 = 1500 (gain 500)
+        // Holding 2: 5 * 200 = 1000 (gain 0)
+        // Total currentValue = 2500, invested = 2000, gain = 500, roi = 25%
+        assertThat(response.getTotalCurrentValue()).isEqualByComparingTo("2500");
+        assertThat(response.getTotalGainLoss()).isEqualByComparingTo("500");
+        assertThat(response.getOverallRoiPercent()).isEqualByComparingTo("25.0000");
+
+        var h1 = response.getHoldings().stream().filter(h -> h.getStockId().equals(1L)).findFirst().orElseThrow();
+        assertThat(h1.getCurrentPrice()).isEqualByComparingTo("150");
+        assertThat(h1.getCurrentValue()).isEqualByComparingTo("1500");
+
+        var h2 = response.getHoldings().stream().filter(h -> h.getStockId().equals(2L)).findFirst().orElseThrow();
+        assertThat(h2.getCurrentPrice()).isEqualByComparingTo("200");
+        assertThat(h2.getCurrentValue()).isEqualByComparingTo("1000");
+    }
+
+    @Test
+    void getPortfolioHandlesHoldingWithNullPriceGracefully() {
+        Stock stockWithoutPrice = Stock.builder().id(1L).ticker("NEW").companyName("New Company").currentPrice(null).build();
+        Holding holding = Holding.builder().id(10L).user(user).stock(stockWithoutPrice)
+                .shares(10).totalPaid(new BigDecimal("1000")).build();
+
+        when(holdingRepository.findByUserId(1L)).thenReturn(List.of(holding));
+        when(transactionRepository.findByUserIdOrderByDateDesc(1L)).thenReturn(List.of());
+
+        var response = portfolioService.getPortfolio(1L);
+
+        assertThat(response.getTotalInvested()).isEqualByComparingTo("1000");
+        assertThat(response.getTotalCurrentValue()).isNull();
+        assertThat(response.getTotalGainLoss()).isNull();
+
+        var h = response.getHoldings().get(0);
+        assertThat(h.getCurrentPrice()).isNull();
+        assertThat(h.getCurrentValue()).isNull();
+        assertThat(h.getGainLoss()).isNull();
+    }
+
+    @Test
+    void getPortfolioReturnsZerosForEmptyPortfolio() {
+        when(holdingRepository.findByUserId(1L)).thenReturn(List.of());
+        when(transactionRepository.findByUserIdOrderByDateDesc(1L)).thenReturn(List.of());
+
+        var response = portfolioService.getPortfolio(1L);
+
+        assertThat(response.getTotalInvested()).isEqualByComparingTo("0");
+        assertThat(response.getTotalCurrentValue()).isEqualByComparingTo("0");
+        assertThat(response.getTotalGainLoss()).isEqualByComparingTo("0");
+        assertThat(response.getOverallRoiPercent()).isEqualByComparingTo("0");
+        assertThat(response.getHoldings()).isEmpty();
     }
 }

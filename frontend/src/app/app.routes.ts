@@ -2,7 +2,11 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/auth.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./pages/landing/landing').then((m) => m.Landing),
+  },
   {
     path: 'login',
     loadComponent: () => import('./pages/login/login').then((m) => m.Login),
@@ -51,5 +55,5 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: '' },
 ];

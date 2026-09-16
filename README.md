@@ -51,6 +51,18 @@ This starts MySQL, the backend, and the frontend (served via nginx) — each wit
 
 The frontend image is built once and reads its backend URL at **container startup**, not build time — `API_URL` in `.env` controls where it points, so you don't need to rebuild the frontend image to point it at a different backend.
 
+## Google Sign-In (optional)
+
+1. Go to [console.cloud.google.com/apis/credentials](https://console.cloud.google.com/apis/credentials) → **Create Credentials** → **OAuth client ID** → **Web application**.
+2. Under **Authorized JavaScript origins**, add `http://localhost:4200` (dev) and your real frontend domain (prod). No redirect URI is needed — this uses Google Identity Services' ID-token flow, not a redirect-based flow.
+3. Copy the **Client ID** (not the secret — it isn't needed) into `GOOGLE_CLIENT_ID`, set on **both** the backend and the frontend container (see `.env.example`).
+
+Without it set, the "Sign in with Google" button just shows a small "not configured" note instead of erroring.
+
+## Email verification
+
+Registering always sends a verification email; whether it's actually *required* to log in is controlled by `REQUIRE_EMAIL_VERIFICATION` (off by default, so existing accounts aren't locked out). A blocked login shows a "Resend verification email" option in the UI.
+
 ## Database schema
 
 Managed by [Flyway](https://flywaydb.org/) (`dse-track/src/main/resources/db/migration/`) — `spring.jpa.hibernate.ddl-auto` is set to `validate`, meaning Hibernate checks the schema matches but never changes it itself.
@@ -69,6 +81,8 @@ Managed by [Flyway](https://flywaydb.org/) (`dse-track/src/main/resources/db/mig
 | `FRONTEND_URL` | No | `http://localhost:8081` | Used to build links inside emails |
 | `CORS_ALLOWED_ORIGINS` | No | `http://localhost:8081,http://localhost:4200` | Comma-separated list of origins allowed to call the API |
 | `API_URL` (frontend container only) | No | `http://localhost:8081` | Backend URL the frontend calls |
+| `GOOGLE_CLIENT_ID` (both backend and frontend) | No | *(empty — button hidden)* | OAuth Client ID for "Sign in with Google" — see below |
+| `REQUIRE_EMAIL_VERIFICATION` | No | `false` | Blocks login until the emailed verification link is clicked |
 | `DB_POOL_MAX`, `TOMCAT_MAX_THREADS` | No | `10`, `50` | Resource-limiting knobs — raise only if you actually need more |
 
 ## Known limitations

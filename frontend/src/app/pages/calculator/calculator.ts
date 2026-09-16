@@ -4,14 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { PortfolioService } from '../../core/portfolio.service';
 import { Holding, Portfolio } from '../../core/models';
 import { ToastService } from '../../core/toast.service';
+import { ShareCard } from '../../core/share-card';
+import { GainLossChart } from '../../core/gain-loss-chart';
 
 @Component({
   selector: 'app-calculator',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ShareCard, GainLossChart],
   template: `
     <h2>P&amp;L Calculator</h2>
-    <p class="hint">Enter today's price for each holding to see your gain/loss.</p>
+    <p class="hint">P&amp;L and charts are calculated from live DSE market data. You can also test hypothetical market moves by editing prices below.</p>
 
     <div class="card">
       @if (!holdings().length) {
@@ -23,7 +25,7 @@ import { ToastService } from '../../core/toast.service';
               <tr>
                 <th>Stock</th>
                 <th>Shares</th>
-                <th>Current price (TZS)</th>
+                <th>Price (TZS)</th>
               </tr>
             </thead>
             <tbody>
@@ -39,9 +41,14 @@ import { ToastService } from '../../core/toast.service';
             </tbody>
           </table>
         </div>
-        <button class="btn" style="margin-top:14px" [disabled]="calculating()" (click)="calculate()">
-          {{ calculating() ? 'Calculating…' : 'Calculate' }}
-        </button>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn" [disabled]="calculating()" (click)="calculate()">
+            {{ calculating() ? 'Calculating…' : 'Recalculate' }}
+          </button>
+          <button class="btn btn-outline" [disabled]="calculating()" (click)="resetToDsePrices()">
+            Reset to DSE prices
+          </button>
+        </div>
       }
     </div>
 
@@ -64,6 +71,19 @@ import { ToastService } from '../../core/toast.service';
           </div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>Gain/loss by holding</h3>
+        <app-gain-loss-chart [holdings]="r.holdings"></app-gain-loss-chart>
+      </div>
+
+      <button class="btn btn-outline" style="margin-top:16px" (click)="showShare.set(true)">
+        Share your return
+      </button>
+
+      @if (showShare()) {
+        <app-share-card [portfolio]="r" (close)="showShare.set(false)"></app-share-card>
+      }
     }
   `,
   styles: [
@@ -80,6 +100,7 @@ export class CalculatorPage implements OnInit {
   readonly holdings = signal<Holding[]>([]);
   readonly calculating = signal(false);
   readonly result = signal<Portfolio | null>(null);
+  readonly showShare = signal(false);
   prices: Record<number, number> = {};
 
   constructor(
@@ -89,8 +110,35 @@ export class CalculatorPage implements OnInit {
 
   ngOnInit() {
     this.portfolioService.get().subscribe({
-      next: (p) => this.holdings.set(p.holdings),
+      next: (p) => {
+        this.holdings.set(p.holdings);
+        this.initPrices(p.holdings);
+        if (p.totalCurrentValue !== undefined && p.totalCurrentValue !== null) {
+          this.result.set(p);
+        }
+      },
       error: () => this.toast.err('Failed to load portfolio'),
+    });
+  }
+
+  private initPrices(holdings: Holding[]) {
+    this.prices = {};
+    for (const h of holdings) {
+      if (h.currentPrice !== undefined && h.currentPrice !== null) {
+        this.prices[h.stockId] = h.currentPrice;
+      }
+    }
+  }
+
+  resetToDsePrices() {
+    this.portfolioService.get().subscribe({
+      next: (p) => {
+        this.holdings.set(p.holdings);
+        this.initPrices(p.holdings);
+        this.result.set(p);
+        this.toast.ok('Reset to live DSE prices');
+      },
+      error: () => this.toast.err('Failed to reload portfolio'),
     });
   }
 

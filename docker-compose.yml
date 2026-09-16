@@ -29,6 +29,8 @@ services:
       MAIL_PASSWORD: ${MAIL_PASSWORD}
       FRONTEND_URL: ${FRONTEND_URL}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      REQUIRE_EMAIL_VERIFICATION: ${REQUIRE_EMAIL_VERIFICATION:-false}
     ports:
       - "8081:8081"
     # Hard container memory cap — this is what actually stops the JVM from
@@ -49,6 +51,7 @@ services:
       - app
     environment:
       API_URL: ${API_URL}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
     ports:
       - "80:80"
     mem_limit: 128m

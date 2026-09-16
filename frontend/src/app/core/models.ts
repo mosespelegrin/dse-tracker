@@ -61,6 +61,7 @@ export interface Holding {
   sector: string;
   shares: number;
   totalPaid: number;
+  currentPrice?: number | null;
   currentValue?: number;
   gainLoss?: number;
   roiPercent?: number;

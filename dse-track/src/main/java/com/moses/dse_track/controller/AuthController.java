@@ -1,6 +1,7 @@
 package com.moses.dse_track.controller;
 
 import com.moses.dse_track.dto.request.ForgotPasswordRequest;
+import com.moses.dse_track.dto.request.GoogleAuthRequest;
 import com.moses.dse_track.dto.request.LoginRequest;
 import com.moses.dse_track.dto.request.RefreshTokenRequest;
 import com.moses.dse_track.dto.request.RegisterRequest;
@@ -8,6 +9,7 @@ import com.moses.dse_track.dto.request.ResetPasswordRequest;
 import com.moses.dse_track.dto.response.AuthResponse;
 import com.moses.dse_track.model.User;
 import com.moses.dse_track.service.AuthService;
+import com.moses.dse_track.service.GoogleAuthService;
 import com.moses.dse_track.service.JwtService;
 import com.moses.dse_track.service.RefreshTokenService;
 import jakarta.validation.Valid;
@@ -24,6 +26,7 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final GoogleAuthService googleAuthService;
     //POST /auth/register
      @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request){
@@ -86,6 +89,34 @@ public class AuthController {
     public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         refreshTokenService.revoke(request.getRefreshToken());
         return ResponseEntity.noContent().build();
+    }
+
+    // POST /auth/google — sign in (or auto-register) using a Google ID token
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleSignIn(@Valid @RequestBody GoogleAuthRequest request) {
+        GoogleAuthService.GoogleUser googleUser = googleAuthService.verify(request.getIdToken());
+        User user = authService.findOrCreateGoogleUser(googleUser.email(), googleUser.name());
+
+        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String refreshToken = refreshTokenService.issue(user);
+
+        AuthResponse response = AuthResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .name(user.getName())
+                .email(user.getEmail())
+                .message("Signed in with Google")
+                .build();
+        return ResponseEntity.ok(response);
+    }
+
+    // POST /auth/resend-verification — always responds the same way, whether or not the email exists/is already verified
+    @PostMapping("/resend-verification")
+    public ResponseEntity<AuthResponse> resendVerification(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.resendVerificationEmail(request.getEmail());
+        return ResponseEntity.ok(AuthResponse.builder()
+                .message("If that email is registered and not yet verified, a new link has been sent")
+                .build());
     }
 
     // POST /auth/forgot-password — always responds the same way, whether or not the email exists

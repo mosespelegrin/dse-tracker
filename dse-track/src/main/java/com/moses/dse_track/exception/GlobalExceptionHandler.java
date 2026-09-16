@@ -5,6 +5,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,6 +16,22 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    // A @Valid @RequestBody failed bean validation (@NotNull, @Size, etc.) —
+    // without this, Spring's own default handling still returns 400, but with
+    // a generic body that drops every one of the DTOs' field-specific messages.
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
+        FieldError fieldError = ex.getBindingResult().getFieldError();
+        String message = fieldError != null ? fieldError.getDefaultMessage() : "Validation failed";
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                        "status", 400,
+                        "message", message,
+                        "timestamp", LocalDateTime.now().toString()
+                ));
+    }
 
     // Expected, developer-authored error conditions (not found, validation,
     // ownership, etc.) — the message is always safe to hand back to the client.

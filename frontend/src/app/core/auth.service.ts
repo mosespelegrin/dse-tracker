@@ -49,6 +49,16 @@ export class AuthService {
       .pipe(tap((res) => this.persistSession(res)));
   }
 
+  googleSignIn(idToken: string): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${API_URL}/auth/google`, { idToken })
+      .pipe(tap((res) => this.persistSession(res)));
+  }
+
+  resendVerification(email: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${API_URL}/auth/resend-verification`, { email });
+  }
+
   forgotPassword(email: string): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${API_URL}/auth/forgot-password`, { email });
   }

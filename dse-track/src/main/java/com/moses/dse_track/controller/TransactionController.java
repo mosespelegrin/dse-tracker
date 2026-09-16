@@ -77,7 +77,7 @@ public class TransactionController {
     //POST /transactions/sell
     @PostMapping("/sell")
     public ResponseEntity<TransactionResponse> sell(
-            @RequestBody TransactionRequest request) {
+            @Valid @RequestBody TransactionRequest request) {
 
         Long userId = getCurrentUserId();
 

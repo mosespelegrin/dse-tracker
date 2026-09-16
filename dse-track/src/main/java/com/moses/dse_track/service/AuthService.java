@@ -80,6 +80,42 @@ public class AuthService {
 
     }
 
+    // Finds the existing account for a Google-authenticated email, or creates
+    // one. A Google sign-in already proves the email is owned by the caller,
+    // so the new account is marked verified immediately and gets a random,
+    // never-used password (this account only ever logs in via Google).
+    public User findOrCreateGoogleUser(String email, String name) {
+        return userRepository.findByEmail(email).orElseGet(() -> {
+            User user = User.builder()
+                    .name(name)
+                    .email(email)
+                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .emailVerified(true)
+                    .build();
+            try {
+                return userRepository.save(user);
+            } catch (DataIntegrityViolationException e) {
+                // Lost a race with a concurrent signup for the same email
+                return userRepository.findByEmail(email)
+                        .orElseThrow(() -> new BusinessException("Could not sign in with Google"));
+            }
+        });
+    }
+
+    // Always succeeds from the caller's point of view, whether or not the
+    // email exists — otherwise this endpoint could be used to enumerate accounts.
+    public void resendVerificationEmail(String email) {
+        String rateLimitKey = "resend-verify:" + email;
+        if (loginAttemptService.isBlocked(rateLimitKey)) {
+            return;
+        }
+        loginAttemptService.loginFailed(rateLimitKey);
+
+        userRepository.findByEmail(email)
+                .filter(user -> !Boolean.TRUE.equals(user.getEmailVerified()))
+                .ifPresent(user -> issueAndSendToken(user, AuthToken.AuthTokenType.EMAIL_VERIFICATION, 24));
+    }
+
     // Always succeeds from the caller's point of view, whether or not the
     // email exists — otherwise this endpoint could be used to enumerate accounts.
     public void requestPasswordReset(String email) {

@@ -22,7 +22,17 @@ import { ToastService } from '../../core/toast.service';
           </div>
           <div class="field">
             <label>New password</label>
-            <input type="password" formControlName="newPassword" placeholder="At least 6 characters" />
+            <div class="password-field">
+              <input [type]="showPassword() ? 'text' : 'password'" formControlName="newPassword" placeholder="At least 6 characters" />
+              <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())"
+                      [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+                @if (showPassword()) {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
+              </button>
+            </div>
           </div>
 
           <button class="btn" type="submit" [disabled]="form.invalid || loading()" style="width:100%">
@@ -71,6 +81,7 @@ import { ToastService } from '../../core/toast.service';
 export class ResetPassword implements OnInit {
   private fb = inject(FormBuilder);
   readonly loading = signal(false);
+  readonly showPassword = signal(false);
 
   form = this.fb.group({
     token: ['', [Validators.required]],

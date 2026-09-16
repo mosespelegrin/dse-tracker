@@ -1,4 +1,4 @@
 // Dev default — overwritten at container startup in production (see
 // docker-entrypoint.sh), so the same built image works against any backend
 // URL without rebuilding. Loaded before the Angular bundle (see index.html).
-window.__env = { apiUrl: "http://localhost:8081" };
+window.__env = { apiUrl: "http://localhost:8081", googleClientId: "414459618902-lvbgo97uq3idpo3bjbo1fm3sopctgmao.apps.googleusercontent.com" };
