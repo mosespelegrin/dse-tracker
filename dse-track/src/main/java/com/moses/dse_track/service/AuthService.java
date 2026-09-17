@@ -1,6 +1,7 @@
 package com.moses.dse_track.service;
 
 import com.moses.dse_track.exception.BusinessException;
+import com.moses.dse_track.model.ActivityLog;
 import com.moses.dse_track.model.AuthToken;
 import com.moses.dse_track.model.User;
 import com.moses.dse_track.repository.AuthTokenRepository;
@@ -24,6 +25,7 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final LoginAttemptService loginAttemptService;
     private final EmailService emailService;
+    private final ActivityLogService activityLogService;
 
     @Value("${app.security.require-email-verification}")
     private boolean requireEmailVerification;
@@ -52,6 +54,7 @@ public class AuthService {
         }
 
         issueAndSendToken(saved, AuthToken.AuthTokenType.EMAIL_VERIFICATION, 24);
+        activityLogService.record(ActivityLog.EventType.REGISTER, saved.getId(), saved.getEmail(), null);
 
         return saved;
     }
@@ -64,10 +67,12 @@ public class AuthService {
         User user=userRepository.findByEmail(email)
                 .orElseThrow(()->{
                     loginAttemptService.loginFailed(email);
+                    activityLogService.record(ActivityLog.EventType.LOGIN_FAILED, null, email, null);
                     return new BusinessException("invalid email or password");
                 });
         if(!passwordEncoder.matches(password,user.getPassword())){
             loginAttemptService.loginFailed(email);
+            activityLogService.record(ActivityLog.EventType.LOGIN_FAILED, user.getId(), email, null);
             throw new BusinessException("invalid username or password");
         }
 
@@ -76,6 +81,7 @@ public class AuthService {
         }
 
         loginAttemptService.loginSucceeded(email);
+        activityLogService.record(ActivityLog.EventType.LOGIN_SUCCESS, user.getId(), email, null);
        return user;
 
     }
@@ -137,10 +143,34 @@ public class AuthService {
 
         User user = authToken.getUser();
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
         userRepository.save(user);
+        activityLogService.record(ActivityLog.EventType.PASSWORD_RESET, user.getId(), user.getEmail(), null);
 
         // A leaked/stolen refresh token shouldn't survive a password reset
         refreshTokenRepository.deleteAllByUser(user);
+    }
+
+    // Used by the logged-in "change my password" flow (as opposed to the
+    // forgot-password flow above, which proves ownership via an emailed
+    // token instead of the current password).
+    public User changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("User not found"));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new BusinessException("Current password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setMustChangePassword(false);
+        User saved = userRepository.save(user);
+        activityLogService.record(ActivityLog.EventType.PASSWORD_CHANGED, saved.getId(), saved.getEmail(), null);
+
+        // A leaked/stolen refresh token shouldn't survive a password change
+        refreshTokenRepository.deleteAllByUser(saved);
+
+        return saved;
     }
 
     public void verifyEmail(String token) {

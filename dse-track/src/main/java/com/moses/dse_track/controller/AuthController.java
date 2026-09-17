@@ -1,5 +1,6 @@
 package com.moses.dse_track.controller;
 
+import com.moses.dse_track.dto.request.ChangePasswordRequest;
 import com.moses.dse_track.dto.request.ForgotPasswordRequest;
 import com.moses.dse_track.dto.request.GoogleAuthRequest;
 import com.moses.dse_track.dto.request.LoginRequest;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,7 +38,7 @@ public class AuthController {
                  request.getEmail(),
                  request.getPassword()
          );
-         String token= jwtService.generateToken(user.getId(), user.getEmail());
+         String token= jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name(), Boolean.TRUE.equals(user.getMustChangePassword()));
          String refreshToken = refreshTokenService.issue(user);
          //convert the response given byb the service layer into a dto
          AuthResponse response = AuthResponse.builder()
@@ -44,6 +46,8 @@ public class AuthController {
                  .refreshToken(refreshToken)
                  .name(user.getName())
                  .email(user.getEmail())
+                 .role(user.getRole().name())
+                 .mustChangePassword(Boolean.TRUE.equals(user.getMustChangePassword()))
                  .message("Registration successfully — check your email to verify your account")
                  .build();
          return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -55,13 +59,15 @@ public class AuthController {
                  request.getPassword()
          );
          //generate token
-         String token=jwtService.generateToken(user.getId(), user.getEmail());
+         String token=jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name(), Boolean.TRUE.equals(user.getMustChangePassword()));
          String refreshToken = refreshTokenService.issue(user);
          AuthResponse response= AuthResponse.builder()
                  .token(token)
                  .refreshToken(refreshToken)
                  .name(user.getName())
                  .email(user.getEmail())
+                 .role(user.getRole().name())
+                 .mustChangePassword(Boolean.TRUE.equals(user.getMustChangePassword()))
                  .message("login successful")
                  .build();
          return ResponseEntity.ok(response);
@@ -72,13 +78,15 @@ public class AuthController {
     public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
         RefreshTokenService.RefreshResult result = refreshTokenService.refresh(request.getRefreshToken());
         User user = result.user();
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name(), Boolean.TRUE.equals(user.getMustChangePassword()));
 
         AuthResponse response = AuthResponse.builder()
                 .token(token)
                 .refreshToken(result.newRefreshToken())
                 .name(user.getName())
                 .email(user.getEmail())
+                 .role(user.getRole().name())
+                 .mustChangePassword(Boolean.TRUE.equals(user.getMustChangePassword()))
                 .message("Token refreshed")
                 .build();
         return ResponseEntity.ok(response);
@@ -97,7 +105,7 @@ public class AuthController {
         GoogleAuthService.GoogleUser googleUser = googleAuthService.verify(request.getIdToken());
         User user = authService.findOrCreateGoogleUser(googleUser.email(), googleUser.name());
 
-        String token = jwtService.generateToken(user.getId(), user.getEmail());
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name(), Boolean.TRUE.equals(user.getMustChangePassword()));
         String refreshToken = refreshTokenService.issue(user);
 
         AuthResponse response = AuthResponse.builder()
@@ -105,6 +113,8 @@ public class AuthController {
                 .refreshToken(refreshToken)
                 .name(user.getName())
                 .email(user.getEmail())
+                 .role(user.getRole().name())
+                 .mustChangePassword(Boolean.TRUE.equals(user.getMustChangePassword()))
                 .message("Signed in with Google")
                 .build();
         return ResponseEntity.ok(response);
@@ -126,6 +136,30 @@ public class AuthController {
         return ResponseEntity.ok(AuthResponse.builder()
                 .message("If that email is registered, a reset link has been sent")
                 .build());
+    }
+
+    // PUT /auth/change-password — for a logged-in user (proves identity via
+    // currentPassword, unlike /auth/reset-password's emailed token). Also the
+    // only way to clear a mustChangePassword-flagged account (e.g. the seeded
+    // admin) so it can use the rest of the API again.
+    @PutMapping("/change-password")
+    public ResponseEntity<AuthResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        Long userId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User user = authService.changePassword(userId, request.getCurrentPassword(), request.getNewPassword());
+
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name(), false);
+        String refreshToken = refreshTokenService.issue(user);
+
+        AuthResponse response = AuthResponse.builder()
+                .token(token)
+                .refreshToken(refreshToken)
+                .name(user.getName())
+                .email(user.getEmail())
+                 .role(user.getRole().name())
+                 .mustChangePassword(Boolean.TRUE.equals(user.getMustChangePassword()))
+                .message("Password changed successfully")
+                .build();
+        return ResponseEntity.ok(response);
     }
 
     // POST /auth/reset-password

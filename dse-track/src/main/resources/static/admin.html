@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard — DSE Tracker</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f0f2f5; --surface: #ffffff; --surface-2: #f7f8fa; --border: #e2e5ea;
+      --text-1: #0f1117; --text-2: #5a6072; --text-3: #9aa0b0; --accent: #1a56db;
+      --green: #0d9e6a; --red: #dc2626; --red-bg: #fef2f2;
+      --radius-md: 12px; --radius-sm: 8px;
+      --font: 'DM Sans', system-ui, sans-serif; --mono: 'DM Mono', ui-monospace, monospace;
+    }
+    [data-theme="dark"] {
+      --bg: #0d0f14; --surface: #161920; --surface-2: #1c1f28; --border: #272b36;
+      --text-1: #eef0f5; --text-2: #8892a4; --text-3: #4e5668; --accent: #4b8eff;
+      --green: #22c77a; --red: #f87171; --red-bg: #1f0a0a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: var(--font); background: var(--bg); color: var(--text-1);
+      padding: 24px 16px 60px;
+    }
+    .wrap { max-width: 960px; margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    h1 { font-size: 20px; margin: 0; }
+    a.back { color: var(--text-2); font-size: 13px; text-decoration: none; }
+    a.back:hover { color: var(--accent); }
+
+    .stat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px; margin-bottom: 28px;
+    }
+    .stat {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+      padding: 16px;
+    }
+    .stat .label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat .value { font-size: 24px; font-weight: 700; margin-top: 4px; font-family: var(--mono); }
+
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+    th, td { text-align: left; padding: 10px 12px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-2); font-weight: 600; font-size: 11px; text-transform: uppercase; background: var(--surface-2); }
+    tr:last-child td { border-bottom: none; }
+    td.time, td.mono { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600;
+      background: var(--surface-2); color: var(--text-2);
+    }
+    .badge.fail { background: var(--red-bg); color: var(--red); }
+
+    .pager { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+    .pager button {
+      background: var(--surface); border: 1px solid var(--border); color: var(--text-1);
+      padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;
+    }
+    .pager button:disabled { opacity: 0.5; cursor: default; }
+
+    .state-msg { color: var(--text-2); font-size: 13px; padding: 20px; text-align: center; }
+    .state-msg.error { color: var(--red); }
+
+    h2 { font-size: 14px; margin: 0 0 10px; color: var(--text-2); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Admin Dashboard</h1>
+      <a class="back" href="dashboard.html">&larr; Back to portfolio</a>
+    </header>
+
+    <div id="deniedMsg" class="state-msg error" style="display:none">
+      You don't have access to this page.
+    </div>
+
+    <div id="content" style="display:none">
+      <div class="stat-grid" id="statGrid"></div>
+
+      <h2>Recent activity (last 7 days shown above, full history below)</h2>
+      <table>
+        <thead>
+          <tr><th>When</th><th>Event</th><th>User</th><th>Detail</th></tr>
+        </thead>
+        <tbody id="logRows"></tbody>
+      </table>
+      <div class="pager">
+        <button id="prevBtn">Previous</button>
+        <button id="nextBtn">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8081';
+    const token = localStorage.getItem('dse_token');
+    const user  = JSON.parse(localStorage.getItem('dse_user') || '{}');
+
+    if (!token) { window.location.href = 'index.html'; }
+    if (user.mustChangePassword) { window.location.href = 'change-password.html'; }
+
+    document.body.dataset.theme = localStorage.getItem('dse-theme') || 'light';
+
+    let page = 0;
+    const PAGE_SIZE = 25;
+
+    async function api(path) {
+      return fetch(API + path, { headers: { 'Authorization': 'Bearer ' + token } });
+    }
+
+    const EVENT_LABELS = {
+      REGISTER: 'Registered',
+      LOGIN_SUCCESS: 'Login',
+      LOGIN_FAILED: 'Login failed',
+      PASSWORD_CHANGED: 'Password changed',
+      PASSWORD_RESET: 'Password reset',
+      FUNDAMENTALS_UPDATED: 'Fundamentals edited'
+    };
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str ?? '';
+      return div.innerHTML;
+    }
+
+    function renderStats(a) {
+      const cards = [
+        ['Total users', a.totalUsers],
+        ['New users (7d)', a.newUsersLast7Days],
+        ['Logins (7d)', a.loginSuccessLast7Days],
+        ['Failed logins (7d)', a.loginFailedLast7Days],
+        ['Password changes (7d)', a.passwordChangesLast7Days],
+        ['Fundamentals edits (7d)', a.fundamentalsEditsLast7Days]
+      ];
+      document.getElementById('statGrid').innerHTML = cards.map(([label, value]) => `
+        <div class="stat">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(String(value))}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderLogs(pageData) {
+      const rows = pageData.content.map(l => {
+        const when = new Date(l.createdAt).toLocaleString();
+        const label = EVENT_LABELS[l.eventType] || l.eventType;
+        const failClass = l.eventType === 'LOGIN_FAILED' ? ' fail' : '';
+        const who = l.email || (l.userId ? `user #${l.userId}` : '—');
+        return `
+          <tr>
+            <td class="time">${escapeHtml(when)}</td>
+            <td><span class="badge${failClass}">${escapeHtml(label)}</span></td>
+            <td>${escapeHtml(who)}</td>
+            <td class="mono">${escapeHtml(l.detail || '')}</td>
+          </tr>
+        `;
+      }).join('');
+      document.getElementById('logRows').innerHTML = rows ||
+        '<tr><td colspan="4" class="state-msg">No activity recorded yet</td></tr>';
+
+      document.getElementById('prevBtn').disabled = pageData.first;
+      document.getElementById('nextBtn').disabled = pageData.last;
+    }
+
+    async function loadLogs() {
+      const res = await api(`/admin/activity-logs?page=${page}&size=${PAGE_SIZE}`);
+      if (res.ok) renderLogs(await res.json());
+    }
+
+    document.getElementById('prevBtn').addEventListener('click', () => { if (page > 0) { page--; loadLogs(); } });
+    document.getElementById('nextBtn').addEventListener('click', () => { page++; loadLogs(); });
+
+    (async function init() {
+      const res = await api('/admin/analytics');
+      if (res.status === 403 || res.status === 401) {
+        document.getElementById('deniedMsg').style.display = '';
+        return;
+      }
+      if (!res.ok) {
+        document.getElementById('deniedMsg').textContent = 'Could not load admin data.';
+        document.getElementById('deniedMsg').style.display = '';
+        return;
+      }
+      document.getElementById('content').style.display = '';
+      renderStats(await res.json());
+      await loadLogs();
+    })();
+  </script>
+</body>
+</html>

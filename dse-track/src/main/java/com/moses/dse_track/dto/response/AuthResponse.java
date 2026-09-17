@@ -15,5 +15,7 @@ public class AuthResponse {
     private String refreshToken;
     private String name;
     private String email;
+    private String role;
+    private Boolean mustChangePassword;
     private String message;
 }

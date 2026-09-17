@@ -37,11 +37,29 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private Boolean emailVerified;
 
+    public enum Role { USER, ADMIN }
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role;
+
+    // Forces a password change (enforced by JwtFilter, blocking every other
+    // endpoint until it's cleared) before the account can be used normally —
+    // set for accounts issued with a known/default password, like the seeded admin.
+    @Column(name = "must_change_password", nullable = false)
+    private Boolean mustChangePassword;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         if (this.emailVerified == null) {
             this.emailVerified = false;
+        }
+        if (this.role == null) {
+            this.role = Role.USER;
+        }
+        if (this.mustChangePassword == null) {
+            this.mustChangePassword = false;
         }
     }
 }

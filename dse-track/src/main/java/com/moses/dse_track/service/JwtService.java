@@ -22,10 +22,12 @@ public class JwtService {
     // Generate a token for a user
     // Called after successful login
     // ───────────────────────────────────────
-    public String generateToken(Long userId, String email) {
+    public String generateToken(Long userId, String email, String role, boolean mustChangePassword) {
         return Jwts.builder()
                 .subject(String.valueOf(userId))   // userId stored in token
                 .claim("email", email)             // email stored in token
+                .claim("role", role)               // role stored in token, drives authorization
+                .claim("mustChangePassword", mustChangePassword)
                 .issuedAt(new Date())              // when token was created
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())         // sign with secret
@@ -43,6 +45,16 @@ public class JwtService {
     // Extract email from token
     public String extractEmail(String token) {
         return getClaims(token).get("email", String.class);
+    }
+
+    // Extract role from token
+    public String extractRole(String token) {
+        return getClaims(token).get("role", String.class);
+    }
+
+    // Extract the "must change password" flag from token
+    public boolean extractMustChangePassword(String token) {
+        return Boolean.TRUE.equals(getClaims(token).get("mustChangePassword", Boolean.class));
     }
 
     // Check if token is still valid (not expired)

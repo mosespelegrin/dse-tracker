@@ -39,6 +39,11 @@ public class SecurityConfig {
 
                 // Define which endpoints need a token
                 .authorizeHttpRequests(auth -> auth
+                        // Unlike the rest of /auth/**, this one acts on the calling
+                        // user (via SecurityContext) and must come first so the
+                        // permitAll below doesn't swallow it.
+                        .requestMatchers(HttpMethod.PUT, "/auth/change-password").authenticated()
+
                         // Public  no token needed
                         // These are the exceptions — public
                         .requestMatchers("/auth/**").permitAll()
@@ -54,9 +59,17 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
 
                         .requestMatchers("/", "/index.html", "/dashboard.html",
+                                "/change-password.html", "/admin.html",
                                 "/**/*.html", "/**/*.css", "/**/*.js").permitAll()
                         // Search engine crawlers hit these with no auth token — must stay public
                         .requestMatchers("/robots.txt", "/sitemap.xml").permitAll()
+
+                        // Shared/global fundamentals data — restricted to admins so any
+                        // authenticated user can't overwrite it (see FundamentalsService).
+                        .requestMatchers(HttpMethod.PUT, "/stocks/*/fundamentals").hasRole("ADMIN")
+
+                        // Admin dashboard — activity log / analytics.
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
 
                         // Everything else needs a valid JWT token
                         .anyRequest().authenticated()

@@ -1,10 +1,13 @@
 package com.moses.dse_track.config;
 
 import com.moses.dse_track.model.Stock;
+import com.moses.dse_track.model.User;
 import com.moses.dse_track.repository.StockRepository;
+import com.moses.dse_track.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,9 +18,43 @@ import java.util.List;
 public class DataSeeder implements CommandLineRunner {
 
     private final StockRepository stockRepository;
+    private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    // Default admin account — the only account allowed to edit shared/global
+    // fundamentals data (see SecurityConfig). Its password is intentionally
+    // the same as its email per an explicit one-off request; that's a weak
+    // credential and should be changed via /auth/forgot-password right after
+    // first login rather than left as the standing admin password.
+    private static final String ADMIN_EMAIL = "mosespelegrin2002@gmail.com";
 
     @Override
     public void run(String... args) {
+        seedAdmin();
+        seedStocks();
+    }
+
+    private void seedAdmin() {
+        if (userRepository.existsByEmail(ADMIN_EMAIL)) {
+            log.info("Admin user already seeded — skipping");
+            return;
+        }
+
+        User admin = User.builder()
+                .name("Moses Pelegrin")
+                .email(ADMIN_EMAIL)
+                .password(passwordEncoder.encode(ADMIN_EMAIL))
+                .role(User.Role.ADMIN)
+                .emailVerified(true)
+                .mustChangePassword(true)
+                .build();
+        userRepository.save(admin);
+        log.warn("Seeded default admin user {} with a weak default password (same as its " +
+                "email) — every endpoint except PUT /auth/change-password is blocked for it " +
+                "until that password is changed", ADMIN_EMAIL);
+    }
+
+    private void seedStocks() {
         if (stockRepository.count() > 0) {
             log.info("Stocks already seeded — skipping");
             return;

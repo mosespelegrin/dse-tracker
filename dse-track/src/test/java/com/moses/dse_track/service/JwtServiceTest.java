@@ -18,11 +18,13 @@ class JwtServiceTest {
 
     @Test
     void generatesATokenThatRoundTripsUserIdAndEmail() {
-        String token = jwtService.generateToken(42L, "user@example.com");
+        String token = jwtService.generateToken(42L, "user@example.com", "USER", false);
 
         assertThat(jwtService.isTokenValid(token)).isTrue();
         assertThat(jwtService.extractUserId(token)).isEqualTo(42L);
         assertThat(jwtService.extractEmail(token)).isEqualTo("user@example.com");
+        assertThat(jwtService.extractRole(token)).isEqualTo("USER");
+        assertThat(jwtService.extractMustChangePassword(token)).isFalse();
     }
 
     @Test
@@ -33,7 +35,7 @@ class JwtServiceTest {
     @Test
     void alreadyExpiredTokenIsInvalid() {
         ReflectionTestUtils.setField(jwtService, "expiration", -1000L); // expires 1s in the past
-        String token = jwtService.generateToken(1L, "user@example.com");
+        String token = jwtService.generateToken(1L, "user@example.com", "USER", false);
 
         assertThat(jwtService.isTokenValid(token)).isFalse();
     }

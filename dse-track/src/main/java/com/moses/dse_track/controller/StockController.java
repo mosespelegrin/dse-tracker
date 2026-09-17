@@ -2,12 +2,15 @@ package com.moses.dse_track.controller;
 
 import com.moses.dse_track.dto.request.StockFundamentalsRequest;
 import com.moses.dse_track.dto.response.StockResponse;
+import com.moses.dse_track.model.ActivityLog;
 import com.moses.dse_track.model.Stock;
+import com.moses.dse_track.service.ActivityLogService;
 import com.moses.dse_track.service.FundamentalsService;
 import com.moses.dse_track.service.StockService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +22,7 @@ public class StockController {
 
     private final StockService stockService;
     private final FundamentalsService fundamentalsService;
+    private final ActivityLogService activityLogService;
 
     // GET /stocks — returns all DSE stocks, each with its fundamental ratios
     // computed fresh from its current price. Used to populate dropdowns
@@ -51,6 +55,10 @@ public class StockController {
             @PathVariable Long id,
             @Valid @RequestBody StockFundamentalsRequest request) {
         Stock stock = stockService.updateFundamentals(id, request);
+
+        Long adminId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        activityLogService.record(ActivityLog.EventType.FUNDAMENTALS_UPDATED, adminId, null, stock.getTicker());
+
         return ResponseEntity.ok(new StockResponse(stock, fundamentalsService.compute(stock)));
     }
 }

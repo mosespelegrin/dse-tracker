@@ -63,9 +63,12 @@ if (registerForm) {
       if (res.ok) {
         // Save token and user info
         localStorage.setItem('dse_token', data.token);
-        localStorage.setItem('dse_user', JSON.stringify({ name: data.name, email: data.email }));
+        localStorage.setItem('dse_user', JSON.stringify({
+          name: data.name, email: data.email, role: data.role, mustChangePassword: data.mustChangePassword
+        }));
         showToast('Account created! Redirecting…');
-        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        const next = data.mustChangePassword ? 'change-password.html' : 'dashboard.html';
+        setTimeout(() => window.location.href = next, 1000);
       } else {
         showToast(data.message || 'Registration failed', 'error');
       }
@@ -106,9 +109,12 @@ if (loginForm) {
 
       if (res.ok) {
         localStorage.setItem('dse_token', data.token);
-        localStorage.setItem('dse_user', JSON.stringify({ name: data.name, email: data.email }));
+        localStorage.setItem('dse_user', JSON.stringify({
+          name: data.name, email: data.email, role: data.role, mustChangePassword: data.mustChangePassword
+        }));
         showToast('Welcome back! Redirecting…');
-        setTimeout(() => window.location.href = 'dashboard.html', 1000);
+        const next = data.mustChangePassword ? 'change-password.html' : 'dashboard.html';
+        setTimeout(() => window.location.href = next, 1000);
       } else {
         showToast(data.message || 'Invalid email or password', 'error');
       }

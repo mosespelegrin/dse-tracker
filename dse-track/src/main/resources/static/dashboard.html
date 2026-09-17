@@ -170,7 +170,7 @@
       padding: 12px 8px 6px;
     }
 
-    .nav-item {
+    .nav-item, .nav-link-item {
       display: flex;
       align-items: center;
       gap: 10px;
@@ -189,7 +189,7 @@
       touch-action: manipulation;
     }
 
-    .nav-item:hover { background: var(--surface-2); color: var(--text-1); }
+    .nav-item:hover, .nav-link-item:hover { background: var(--surface-2); color: var(--text-1); }
 
     .nav-item.active {
       background: var(--accent-bg);
@@ -197,7 +197,7 @@
       font-weight: 600;
     }
 
-    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
+    .nav-item svg, .nav-link-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: 0.7; }
     .nav-item.active svg { opacity: 1; }
 
     .sidebar-footer {
@@ -805,6 +805,15 @@
         </svg>
         Alerts
       </button>
+
+      <div class="nav-section-label" id="adminSectionLabel" style="display:none">Admin</div>
+
+      <a class="nav-link-item" id="adminNavLink" href="admin.html" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/>
+        </svg>
+        Admin Dashboard
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -1146,9 +1155,15 @@ const token = localStorage.getItem('dse_token');
 const user  = JSON.parse(localStorage.getItem('dse_user') || '{}');
 
 if (!token) { window.location.href = 'index.html'; }
+if (user.mustChangePassword) { window.location.href = 'change-password.html'; }
 
 document.getElementById('sidebarName').textContent    = user.name || 'Investor';
 document.getElementById('sidebarInitial').textContent = (user.name || 'I')[0].toUpperCase();
+
+if (user.role === 'ADMIN') {
+  document.getElementById('adminSectionLabel').style.display = '';
+  document.getElementById('adminNavLink').style.display = '';
+}
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('dse_token');
